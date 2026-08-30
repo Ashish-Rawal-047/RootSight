@@ -1,4 +1,4 @@
-# RootSight v5 — Round 2 prototype
+# RootSight  — Round 2 prototype
 
 A deterministic causal reasoning pipeline for KPI movements. The language model
 phrases the answer; it never decides it.
