@@ -1,0 +1,1643 @@
+{
+  "version": "5.0.0",
+  "as_of": "2026-08-26",
+  "contract_hash": "d4a86369135ed526",
+  "capabilities": [
+    {
+      "id": "R1",
+      "capability": "Three to five connected KPIs",
+      "tests": [
+        "test_r01_connected_kpis"
+      ],
+      "tests_executed": [
+        "test_r01_connected_kpis"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r01_connected_kpis": {
+          "kpis": [
+            "avg_selling_price",
+            "complaint_rate",
+            "net_revenue",
+            "on_time_dispatch_rate",
+            "subscription_arr",
+            "units_sold"
+          ],
+          "declared_edges": 13
+        }
+      }
+    },
+    {
+      "id": "R2",
+      "capability": "Two or three data sources",
+      "tests": [
+        "test_r02_r03_sources_grains_cadences"
+      ],
+      "tests_executed": [
+        "test_r02_r03_sources_grains_cadences"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r02_r03_sources_grains_cadences": {
+          "sources": [
+            "SRC_ERP",
+            "SRC_EXT",
+            "SRC_MKT",
+            "SRC_OPS"
+          ],
+          "grains": [
+            "day x product_line (partial)",
+            "day x region x product_line",
+            "event-level (dispatch) / day x region x category (tickets)",
+            "iso_week x campaign x region"
+          ],
+          "cadences": [
+            "daily 02:00 IST batch",
+            "irregular / best-effort",
+            "near-real-time, 15 minute micro-batch",
+            "weekly Monday 09:00 IST"
+          ],
+          "calendars": [
+            "CALENDAR_DAY",
+            "FISCAL",
+            "ISO_WEEK"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R3",
+      "capability": "Different data grains and refresh cadences",
+      "tests": [
+        "test_r02_r03_sources_grains_cadences",
+        "test_r03b_grain_reconciliation_records_resolution"
+      ],
+      "tests_executed": [
+        "test_r02_r03_sources_grains_cadences",
+        "test_r03b_grain_reconciliation_records_resolution"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r02_r03_sources_grains_cadences": {
+          "sources": [
+            "SRC_ERP",
+            "SRC_EXT",
+            "SRC_MKT",
+            "SRC_OPS"
+          ],
+          "grains": [
+            "day x product_line (partial)",
+            "day x region x product_line",
+            "event-level (dispatch) / day x region x category (tickets)",
+            "iso_week x campaign x region"
+          ],
+          "cadences": [
+            "daily 02:00 IST batch",
+            "irregular / best-effort",
+            "near-real-time, 15 minute micro-batch",
+            "weekly Monday 09:00 IST"
+          ],
+          "calendars": [
+            "CALENDAR_DAY",
+            "FISCAL",
+            "ISO_WEEK"
+          ]
+        },
+        "test_r03b_grain_reconciliation_records_resolution": {
+          "transforms": {
+            "TR-ERP-01": 1.0,
+            "TR-OPS-01": 1.0,
+            "TR-OPS-02": 1.0,
+            "TR-MKT-01": 7.0,
+            "TR-EXT-01": 1.0
+          }
+        }
+      }
+    },
+    {
+      "id": "R4",
+      "capability": "Lightweight KPI / semantic contract",
+      "tests": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "tests_executed": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r04_to_r10_contract_completeness": {
+          "kpis": 8,
+          "fields_checked": 20,
+          "registry_hash": "d4a86369135ed526"
+        }
+      }
+    },
+    {
+      "id": "R5",
+      "capability": "KPI definitions",
+      "tests": [
+        "test_r04_to_r10_contract_completeness",
+        "test_r05b_kpi_definition_inconsistency_blocked"
+      ],
+      "tests_executed": [
+        "test_r04_to_r10_contract_completeness",
+        "test_r05b_kpi_definition_inconsistency_blocked"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r04_to_r10_contract_completeness": {
+          "kpis": 8,
+          "fields_checked": 20,
+          "registry_hash": "d4a86369135ed526"
+        },
+        "test_r05b_kpi_definition_inconsistency_blocked": {
+          "formulas": [
+            "gross_sales",
+            "gross_sales - refunds - discounts",
+            "gross_sales - refunds - discounts - deferred_delta"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R6",
+      "capability": "KPI calculations",
+      "tests": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "tests_executed": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r04_to_r10_contract_completeness": {
+          "kpis": 8,
+          "fields_checked": 20,
+          "registry_hash": "d4a86369135ed526"
+        }
+      }
+    },
+    {
+      "id": "R7",
+      "capability": "KPI drivers",
+      "tests": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "tests_executed": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r04_to_r10_contract_completeness": {
+          "kpis": 8,
+          "fields_checked": 20,
+          "registry_hash": "d4a86369135ed526"
+        }
+      }
+    },
+    {
+      "id": "R8",
+      "capability": "KPI thresholds",
+      "tests": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "tests_executed": [
+        "test_r04_to_r10_contract_completeness"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r04_to_r10_contract_completeness": {
+          "kpis": 8,
+          "fields_checked": 20,
+          "registry_hash": "d4a86369135ed526"
+        }
+      }
+    },
+    {
+      "id": "R9",
+      "capability": "KPI lineage",
+      "tests": [
+        "test_r09_lineage_is_traceable"
+      ],
+      "tests_executed": [
+        "test_r09_lineage_is_traceable"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r09_lineage_is_traceable": {
+          "chain": [
+            "kpi",
+            "formula",
+            "source_tables",
+            "partitions",
+            "transformations",
+            "model_versions",
+            "analysis",
+            "trust_contract",
+            "narrative"
+          ],
+          "rows_used": 2863
+        }
+      }
+    },
+    {
+      "id": "R10",
+      "capability": "KPI access restrictions",
+      "tests": [
+        "test_r04_to_r10_contract_completeness",
+        "test_r19_role_based_security_enforced_in_backend"
+      ],
+      "tests_executed": [
+        "test_r04_to_r10_contract_completeness",
+        "test_r19_role_based_security_enforced_in_backend"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r04_to_r10_contract_completeness": {
+          "kpis": 8,
+          "fields_checked": 20,
+          "registry_hash": "d4a86369135ed526"
+        },
+        "test_r19_role_based_security_enforced_in_backend": {
+          "denials": [
+            "ROW_SCOPE_VIOLATION",
+            "GRAIN_VIOLATION",
+            "DOMAIN_VIOLATION",
+            "UNKNOWN_PERSONA"
+          ],
+          "ops_window_value": 80230758.53,
+          "cfo_window_value": 285610941.09
+        }
+      }
+    },
+    {
+      "id": "R11",
+      "capability": "At least two personas",
+      "tests": [
+        "test_r11_r12_r13_personas_differ"
+      ],
+      "tests_executed": [
+        "test_r11_r12_r13_personas_differ"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r11_r12_r13_personas_differ": {
+          "sections": {
+            "cfo": [
+              "headline",
+              "exposure",
+              "driver",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ],
+            "ops": [
+              "headline",
+              "operational",
+              "driver",
+              "affected",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ],
+            "fin": [
+              "headline",
+              "decomposition",
+              "driver",
+              "method",
+              "diagnostics",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ]
+          },
+          "recommendations": {
+            "cfo": [
+              "PB-GOV-001",
+              "PB-OPS-001",
+              "PB-PRC-001"
+            ],
+            "ops": [
+              "PB-GOV-001",
+              "PB-OPS-001",
+              "PB-OPS-002"
+            ],
+            "fin": [
+              "PB-GOV-001",
+              "PB-GOV-001",
+              "PB-OPS-001"
+            ]
+          },
+          "word_counts": {
+            "cfo": 722,
+            "ops": 506,
+            "fin": 877
+          }
+        }
+      }
+    },
+    {
+      "id": "R12",
+      "capability": "Different insight narratives by persona",
+      "tests": [
+        "test_r11_r12_r13_personas_differ"
+      ],
+      "tests_executed": [
+        "test_r11_r12_r13_personas_differ"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r11_r12_r13_personas_differ": {
+          "sections": {
+            "cfo": [
+              "headline",
+              "exposure",
+              "driver",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ],
+            "ops": [
+              "headline",
+              "operational",
+              "driver",
+              "affected",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ],
+            "fin": [
+              "headline",
+              "decomposition",
+              "driver",
+              "method",
+              "diagnostics",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ]
+          },
+          "recommendations": {
+            "cfo": [
+              "PB-GOV-001",
+              "PB-OPS-001",
+              "PB-PRC-001"
+            ],
+            "ops": [
+              "PB-GOV-001",
+              "PB-OPS-001",
+              "PB-OPS-002"
+            ],
+            "fin": [
+              "PB-GOV-001",
+              "PB-GOV-001",
+              "PB-OPS-001"
+            ]
+          },
+          "word_counts": {
+            "cfo": 722,
+            "ops": 506,
+            "fin": 877
+          }
+        }
+      }
+    },
+    {
+      "id": "R13",
+      "capability": "Different recommended actions by persona",
+      "tests": [
+        "test_r11_r12_r13_personas_differ"
+      ],
+      "tests_executed": [
+        "test_r11_r12_r13_personas_differ"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r11_r12_r13_personas_differ": {
+          "sections": {
+            "cfo": [
+              "headline",
+              "exposure",
+              "driver",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ],
+            "ops": [
+              "headline",
+              "operational",
+              "driver",
+              "affected",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ],
+            "fin": [
+              "headline",
+              "decomposition",
+              "driver",
+              "method",
+              "diagnostics",
+              "limits",
+              "contradicting",
+              "gaps",
+              "decision"
+            ]
+          },
+          "recommendations": {
+            "cfo": [
+              "PB-GOV-001",
+              "PB-OPS-001",
+              "PB-PRC-001"
+            ],
+            "ops": [
+              "PB-GOV-001",
+              "PB-OPS-001",
+              "PB-OPS-002"
+            ],
+            "fin": [
+              "PB-GOV-001",
+              "PB-GOV-001",
+              "PB-OPS-001"
+            ]
+          },
+          "word_counts": {
+            "cfo": 722,
+            "ops": 506,
+            "fin": 877
+          }
+        }
+      }
+    },
+    {
+      "id": "R14",
+      "capability": "One multi-factor KPI movement",
+      "tests": [
+        "test_r14_r15_multifactor_and_decomposition"
+      ],
+      "tests_executed": [
+        "test_r14_r15_multifactor_and_decomposition"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r14_r15_multifactor_and_decomposition": {
+          "terms": {
+            "D_VOLUME": -4.5219,
+            "D_MIX": -1.9161,
+            "D_PRICE": -1.7093,
+            "D_ENTRY": 0.9292
+          },
+          "total_pp": -7.2181,
+          "distinct_statuses": [
+            "ASSOCIATION_ONLY",
+            "INSUFFICIENT_EVIDENCE",
+            "NOT_POINT_IDENTIFIED",
+            "SUPPORTED_BY_DESIGN"
+          ],
+          "ground_truth_drivers": [
+            "seed",
+            "disruption_region",
+            "disruption_start",
+            "disruption_end",
+            "disruption_units_multiplier",
+            "disruption_lag_days",
+            "competitor_start",
+            "competitor_end",
+            "competitor_line",
+            "competitor_units_multiplier",
+            "marketing_cut_week_start",
+            "marketing_cut_fraction",
+            "marketing_units_multiplier",
+            "price_line",
+            "price_start",
+            "price_increase",
+            "mix_drift_start",
+            "mix_drift"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R15",
+      "capability": "Known or simulated underlying drivers",
+      "tests": [
+        "test_r14_r15_multifactor_and_decomposition",
+        "test_r15b_effect_recovers_ground_truth"
+      ],
+      "tests_executed": [
+        "test_r14_r15_multifactor_and_decomposition",
+        "test_r15b_effect_recovers_ground_truth"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r14_r15_multifactor_and_decomposition": {
+          "terms": {
+            "D_VOLUME": -4.5219,
+            "D_MIX": -1.9161,
+            "D_PRICE": -1.7093,
+            "D_ENTRY": 0.9292
+          },
+          "total_pp": -7.2181,
+          "distinct_statuses": [
+            "ASSOCIATION_ONLY",
+            "INSUFFICIENT_EVIDENCE",
+            "NOT_POINT_IDENTIFIED",
+            "SUPPORTED_BY_DESIGN"
+          ],
+          "ground_truth_drivers": [
+            "seed",
+            "disruption_region",
+            "disruption_start",
+            "disruption_end",
+            "disruption_units_multiplier",
+            "disruption_lag_days",
+            "competitor_start",
+            "competitor_end",
+            "competitor_line",
+            "competitor_units_multiplier",
+            "marketing_cut_week_start",
+            "marketing_cut_fraction",
+            "marketing_units_multiplier",
+            "price_line",
+            "price_start",
+            "price_increase",
+            "mix_drift_start",
+            "mix_drift"
+          ]
+        },
+        "test_r15b_effect_recovers_ground_truth": {
+          "true_att": -48.326,
+          "estimate": -51.714,
+          "ci95": [
+            -68.166,
+            -35.263
+          ],
+          "p_randomisation": 0.012345679012345678,
+          "n_permutations": 84
+        }
+      }
+    },
+    {
+      "id": "R16",
+      "capability": "One low-confidence scenario",
+      "tests": [
+        "test_r16_r17_low_confidence_and_clarification"
+      ],
+      "tests_executed": [
+        "test_r16_r17_low_confidence_and_clarification"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r16_r17_low_confidence_and_clarification": {
+          "statuses": [
+            "ASSOCIATION_ONLY",
+            "ASSOCIATION_ONLY",
+            "INSUFFICIENT_EVIDENCE"
+          ],
+          "reason_codes": [
+            "SOURCE_COVERAGE_GAP",
+            "SOURCE_STALE",
+            "UNRESOLVED_CONFOUNDER"
+          ],
+          "question": "Marketing Automation emits no rows for South. Was a marketing campaign active in South between 2026-08-07 and 2026-08-25, and if so at what spend or intensity?",
+          "addressed_to": "marketing operations owner for SRC_MKT"
+        }
+      }
+    },
+    {
+      "id": "R17",
+      "capability": "Clarification request OR abstention",
+      "tests": [
+        "test_r16_r17_low_confidence_and_clarification",
+        "test_r18_sparse_history"
+      ],
+      "tests_executed": [
+        "test_r16_r17_low_confidence_and_clarification",
+        "test_r18_sparse_history"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r16_r17_low_confidence_and_clarification": {
+          "statuses": [
+            "ASSOCIATION_ONLY",
+            "ASSOCIATION_ONLY",
+            "INSUFFICIENT_EVIDENCE"
+          ],
+          "reason_codes": [
+            "SOURCE_COVERAGE_GAP",
+            "SOURCE_STALE",
+            "UNRESOLVED_CONFOUNDER"
+          ],
+          "question": "Marketing Automation emits no rows for South. Was a marketing campaign active in South between 2026-08-07 and 2026-08-25, and if so at what spend or intensity?",
+          "addressed_to": "marketing operations owner for SRC_MKT"
+        },
+        "test_r18_sparse_history": {
+          "history_days": 21,
+          "benchmark_lines": 4,
+          "clarification": "Subscription ARR (NorthWind Care) has 21 days of history since launch on 2026-08-05. The earliest date a interrupted time series design becomes eligible is 2026-08-25. Do you want a descriptive read now, or a causal read scheduled for 2026-08-25?"
+        }
+      }
+    },
+    {
+      "id": "R18",
+      "capability": "One sparse-history / newly launched KPI scenario",
+      "tests": [
+        "test_r18_sparse_history"
+      ],
+      "tests_executed": [
+        "test_r18_sparse_history"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r18_sparse_history": {
+          "history_days": 21,
+          "benchmark_lines": 4,
+          "clarification": "Subscription ARR (NorthWind Care) has 21 days of history since launch on 2026-08-05. The earliest date a interrupted time series design becomes eligible is 2026-08-25. Do you want a descriptive read now, or a causal read scheduled for 2026-08-25?"
+        }
+      }
+    },
+    {
+      "id": "R19",
+      "capability": "One role-based security / entitlement scenario",
+      "tests": [
+        "test_r19_role_based_security_enforced_in_backend",
+        "test_r19b_prompt_safety_tripwire",
+        "test_r19c_no_entity_leakage_in_narrative"
+      ],
+      "tests_executed": [
+        "test_r19_role_based_security_enforced_in_backend",
+        "test_r19b_prompt_safety_tripwire",
+        "test_r19c_no_entity_leakage_in_narrative"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r19_role_based_security_enforced_in_backend": {
+          "denials": [
+            "ROW_SCOPE_VIOLATION",
+            "GRAIN_VIOLATION",
+            "DOMAIN_VIOLATION",
+            "UNKNOWN_PERSONA"
+          ],
+          "ops_window_value": 80230758.53,
+          "cfo_window_value": 285610941.09
+        },
+        "test_r19b_prompt_safety_tripwire": {
+          "note": "restricted data cannot reach a prompt; the tripwire raises first"
+        },
+        "test_r19c_no_entity_leakage_in_narrative": {
+          "runs_checked": 9
+        }
+      }
+    },
+    {
+      "id": "R20",
+      "capability": "Evidence freshness",
+      "tests": [
+        "test_r20_every_evidence_object_carries_freshness"
+      ],
+      "tests_executed": [
+        "test_r20_every_evidence_object_carries_freshness"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r20_every_evidence_object_carries_freshness": {
+          "evidence_objects": 23,
+          "freshness_states": [
+            "CURRENT",
+            "STALE"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R21",
+      "capability": "Analytical method on every evidence item",
+      "tests": [
+        "test_r21_r22_r23_r24_evidence_fields"
+      ],
+      "tests_executed": [
+        "test_r21_r22_r23_r24_evidence_fields"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r21_r22_r23_r24_evidence_fields": {
+          "contribution_kinds": {
+            "ARITHMETIC_CONTRIBUTION": 4,
+            "CAUSAL_EFFECT": 1
+          },
+          "uncertainty_traceable_to": [
+            "identification status",
+            "estimator inference",
+            "robustness checks",
+            "data coverage and freshness"
+          ],
+          "uncertainty_not_derived_from": [
+            "EWHR",
+            "any single confidence number"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R22",
+      "capability": "Contribution",
+      "tests": [
+        "test_r21_r22_r23_r24_evidence_fields",
+        "test_r14_r15_multifactor_and_decomposition"
+      ],
+      "tests_executed": [
+        "test_r21_r22_r23_r24_evidence_fields",
+        "test_r14_r15_multifactor_and_decomposition"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r21_r22_r23_r24_evidence_fields": {
+          "contribution_kinds": {
+            "ARITHMETIC_CONTRIBUTION": 4,
+            "CAUSAL_EFFECT": 1
+          },
+          "uncertainty_traceable_to": [
+            "identification status",
+            "estimator inference",
+            "robustness checks",
+            "data coverage and freshness"
+          ],
+          "uncertainty_not_derived_from": [
+            "EWHR",
+            "any single confidence number"
+          ]
+        },
+        "test_r14_r15_multifactor_and_decomposition": {
+          "terms": {
+            "D_VOLUME": -4.5219,
+            "D_MIX": -1.9161,
+            "D_PRICE": -1.7093,
+            "D_ENTRY": 0.9292
+          },
+          "total_pp": -7.2181,
+          "distinct_statuses": [
+            "ASSOCIATION_ONLY",
+            "INSUFFICIENT_EVIDENCE",
+            "NOT_POINT_IDENTIFIED",
+            "SUPPORTED_BY_DESIGN"
+          ],
+          "ground_truth_drivers": [
+            "seed",
+            "disruption_region",
+            "disruption_start",
+            "disruption_end",
+            "disruption_units_multiplier",
+            "disruption_lag_days",
+            "competitor_start",
+            "competitor_end",
+            "competitor_line",
+            "competitor_units_multiplier",
+            "marketing_cut_week_start",
+            "marketing_cut_fraction",
+            "marketing_units_multiplier",
+            "price_line",
+            "price_start",
+            "price_increase",
+            "mix_drift_start",
+            "mix_drift"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R23",
+      "capability": "Confidence traceable to evidence, not invented",
+      "tests": [
+        "test_r21_r22_r23_r24_evidence_fields",
+        "test_r23b_ewhr_cannot_produce_a_status"
+      ],
+      "tests_executed": [
+        "test_r21_r22_r23_r24_evidence_fields",
+        "test_r23b_ewhr_cannot_produce_a_status"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r21_r22_r23_r24_evidence_fields": {
+          "contribution_kinds": {
+            "ARITHMETIC_CONTRIBUTION": 4,
+            "CAUSAL_EFFECT": 1
+          },
+          "uncertainty_traceable_to": [
+            "identification status",
+            "estimator inference",
+            "robustness checks",
+            "data coverage and freshness"
+          ],
+          "uncertainty_not_derived_from": [
+            "EWHR",
+            "any single confidence number"
+          ]
+        },
+        "test_r23b_ewhr_cannot_produce_a_status": {
+          "statuses": [
+            "ASSOCIATION_ONLY",
+            "INSUFFICIENT_EVIDENCE",
+            "NOT_POINT_IDENTIFIED",
+            "SUPPORTED_BY_DESIGN",
+            "SUPPORTED_BY_INTERVENTION"
+          ],
+          "note": "no threshold on EWHR grants permission to make a causal claim"
+        }
+      }
+    },
+    {
+      "id": "R24",
+      "capability": "Lineage on every result",
+      "tests": [
+        "test_r09_lineage_is_traceable",
+        "test_r21_r22_r23_r24_evidence_fields"
+      ],
+      "tests_executed": [
+        "test_r09_lineage_is_traceable",
+        "test_r21_r22_r23_r24_evidence_fields"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r09_lineage_is_traceable": {
+          "chain": [
+            "kpi",
+            "formula",
+            "source_tables",
+            "partitions",
+            "transformations",
+            "model_versions",
+            "analysis",
+            "trust_contract",
+            "narrative"
+          ],
+          "rows_used": 2863
+        },
+        "test_r21_r22_r23_r24_evidence_fields": {
+          "contribution_kinds": {
+            "ARITHMETIC_CONTRIBUTION": 4,
+            "CAUSAL_EFFECT": 1
+          },
+          "uncertainty_traceable_to": [
+            "identification status",
+            "estimator inference",
+            "robustness checks",
+            "data coverage and freshness"
+          ],
+          "uncertainty_not_derived_from": [
+            "EWHR",
+            "any single confidence number"
+          ]
+        }
+      }
+    },
+    {
+      "id": "R25",
+      "capability": "Clear LLM vs non-LLM processing boundary",
+      "tests": [
+        "test_r25_llm_boundary_explicit_and_measured"
+      ],
+      "tests_executed": [
+        "test_r25_llm_boundary_explicit_and_measured"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r25_llm_boundary_explicit_and_measured": {
+          "non_llm_stages": 25,
+          "llm_roles": [
+            "prose rendering of a narrative plan it cannot alter",
+            "rephrasing a clarification question that was selected deterministically"
+          ],
+          "pct_by_layer": {
+            "NON_LLM": 100.0
+          },
+          "llm_enabled": false
+        }
+      }
+    },
+    {
+      "id": "R26",
+      "capability": "Runtime telemetry",
+      "tests": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "tests_executed": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r26_to_r30_telemetry": {
+          "total_ms": 5192.74,
+          "model_calls": 1,
+          "tokens": 4478,
+          "token_source": "ESTIMATED",
+          "usd_per_analysis": 0.0,
+          "projection_month": 0.0
+        }
+      }
+    },
+    {
+      "id": "R27",
+      "capability": "Latency measurement",
+      "tests": [
+        "test_r26_to_r30_telemetry",
+        "test_r27b_latency_budget"
+      ],
+      "tests_executed": [
+        "test_r26_to_r30_telemetry",
+        "test_r27b_latency_budget"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r26_to_r30_telemetry": {
+          "total_ms": 5192.74,
+          "model_calls": 1,
+          "tokens": 4478,
+          "token_source": "ESTIMATED",
+          "usd_per_analysis": 0.0,
+          "projection_month": 0.0
+        },
+        "test_r27b_latency_budget": {
+          "max_ms": 5691.7,
+          "median_ms": 2696.6,
+          "budget_ms": 60000
+        }
+      }
+    },
+    {
+      "id": "R28",
+      "capability": "Model-call measurement",
+      "tests": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "tests_executed": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r26_to_r30_telemetry": {
+          "total_ms": 5192.74,
+          "model_calls": 1,
+          "tokens": 4478,
+          "token_source": "ESTIMATED",
+          "usd_per_analysis": 0.0,
+          "projection_month": 0.0
+        }
+      }
+    },
+    {
+      "id": "R29",
+      "capability": "Token usage",
+      "tests": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "tests_executed": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r26_to_r30_telemetry": {
+          "total_ms": 5192.74,
+          "model_calls": 1,
+          "tokens": 4478,
+          "token_source": "ESTIMATED",
+          "usd_per_analysis": 0.0,
+          "projection_month": 0.0
+        }
+      }
+    },
+    {
+      "id": "R30",
+      "capability": "Estimated cost",
+      "tests": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "tests_executed": [
+        "test_r26_to_r30_telemetry"
+      ],
+      "status": "PASS",
+      "evidence": {
+        "test_r26_to_r30_telemetry": {
+          "total_ms": 5192.74,
+          "model_calls": 1,
+          "tokens": 4478,
+          "token_source": "ESTIMATED",
+          "usd_per_analysis": 0.0,
+          "projection_month": 0.0
+        }
+      }
+    }
+  ],
+  "audit_items": [
+    {
+      "id": "A1",
+      "item": "FCI / structure step cannot identify effects on its own",
+      "tests": [
+        "test_causal_structure_screen_cannot_invent_edges",
+        "test_causal_identification_separated_from_estimation"
+      ],
+      "tests_executed": [
+        "test_causal_structure_screen_cannot_invent_edges",
+        "test_causal_identification_separated_from_estimation"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A2",
+      "item": "Identification separated from estimation",
+      "tests": [
+        "test_causal_identification_separated_from_estimation",
+        "test_causal_d_separation_textbook_cases"
+      ],
+      "tests_executed": [
+        "test_causal_identification_separated_from_estimation",
+        "test_causal_d_separation_textbook_cases"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A3",
+      "item": "DID used only when its own assumptions hold; no automatic fallback to ITS",
+      "tests": [
+        "test_causal_did_assumptions_and_inference",
+        "test_causal_identification_separated_from_estimation"
+      ],
+      "tests_executed": [
+        "test_causal_did_assumptions_and_inference",
+        "test_causal_identification_separated_from_estimation"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A4",
+      "item": "ITS diagnostics: pre-period, trend, seasonality, autocorrelation, placebo",
+      "tests": [
+        "test_causal_its_placebo_and_autocorrelation"
+      ],
+      "tests_executed": [
+        "test_causal_its_placebo_and_autocorrelation"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A5",
+      "item": "Temporal ordering renamed temporal compatibility",
+      "tests": [
+        "test_causal_temporal_compatibility_naming_and_grain"
+      ],
+      "tests_executed": [
+        "test_causal_temporal_compatibility_naming_and_grain"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A6",
+      "item": "No fabricated partial-identification bounds",
+      "tests": [
+        "test_causal_no_fabricated_bounds"
+      ],
+      "tests_executed": [
+        "test_causal_no_fabricated_bounds"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A7",
+      "item": "E-value removed from the MVP",
+      "tests": [
+        "test_causal_no_evalue_anywhere"
+      ],
+      "tests_executed": [
+        "test_causal_no_evalue_anywhere"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A8",
+      "item": "EWHR is a ranking only and cannot produce a status",
+      "tests": [
+        "test_r23b_ewhr_cannot_produce_a_status"
+      ],
+      "tests_executed": [
+        "test_r23b_ewhr_cannot_produce_a_status"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A9",
+      "item": "Materiality separated from statistical significance",
+      "tests": [
+        "test_materiality_two_axes_not_multiplied",
+        "test_recommendations_gated_by_licensed_action"
+      ],
+      "tests_executed": [
+        "test_materiality_two_axes_not_multiplied",
+        "test_recommendations_gated_by_licensed_action"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A10",
+      "item": "Multiple-comparison control",
+      "tests": [
+        "test_causal_multiplicity_control"
+      ],
+      "tests_executed": [
+        "test_causal_multiplicity_control"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A11",
+      "item": "Trust Contract is machine-readable and pre-LLM",
+      "tests": [
+        "test_trust_contract_and_validation"
+      ],
+      "tests_executed": [
+        "test_trust_contract_and_validation"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A12",
+      "item": "Claim grammar is status-aware",
+      "tests": [
+        "test_claim_grammar_blocks_causal_language_when_unidentified"
+      ],
+      "tests_executed": [
+        "test_claim_grammar_blocks_causal_language_when_unidentified"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A13",
+      "item": "Degraded mode is a valid output",
+      "tests": [
+        "test_degraded_mode_is_a_valid_output"
+      ],
+      "tests_executed": [
+        "test_degraded_mode_is_a_valid_output"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A14",
+      "item": "Data quality exposed, not hidden",
+      "tests": [
+        "test_data_quality_exposed_not_hidden"
+      ],
+      "tests_executed": [
+        "test_data_quality_exposed_not_hidden"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A15",
+      "item": "Business calendars reconciled and conflicts surfaced",
+      "tests": [
+        "test_business_calendar_conflicts_surfaced"
+      ],
+      "tests_executed": [
+        "test_business_calendar_conflicts_surfaced"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "A16",
+      "item": "Intervention loop validates with the same design",
+      "tests": [
+        "test_intervention_loop_validates_with_the_same_design"
+      ],
+      "tests_executed": [
+        "test_intervention_loop_validates_with_the_same_design"
+      ],
+      "status": "PASS"
+    }
+  ],
+  "raw_results": {
+    "test_r01_connected_kpis": {
+      "kpis": [
+        "avg_selling_price",
+        "complaint_rate",
+        "net_revenue",
+        "on_time_dispatch_rate",
+        "subscription_arr",
+        "units_sold"
+      ],
+      "declared_edges": 13
+    },
+    "test_r02_r03_sources_grains_cadences": {
+      "sources": [
+        "SRC_ERP",
+        "SRC_EXT",
+        "SRC_MKT",
+        "SRC_OPS"
+      ],
+      "grains": [
+        "day x product_line (partial)",
+        "day x region x product_line",
+        "event-level (dispatch) / day x region x category (tickets)",
+        "iso_week x campaign x region"
+      ],
+      "cadences": [
+        "daily 02:00 IST batch",
+        "irregular / best-effort",
+        "near-real-time, 15 minute micro-batch",
+        "weekly Monday 09:00 IST"
+      ],
+      "calendars": [
+        "CALENDAR_DAY",
+        "FISCAL",
+        "ISO_WEEK"
+      ]
+    },
+    "test_r03b_grain_reconciliation_records_resolution": {
+      "transforms": {
+        "TR-ERP-01": 1.0,
+        "TR-OPS-01": 1.0,
+        "TR-OPS-02": 1.0,
+        "TR-MKT-01": 7.0,
+        "TR-EXT-01": 1.0
+      }
+    },
+    "test_r04_to_r10_contract_completeness": {
+      "kpis": 8,
+      "fields_checked": 20,
+      "registry_hash": "d4a86369135ed526"
+    },
+    "test_r05b_kpi_definition_inconsistency_blocked": {
+      "formulas": [
+        "gross_sales",
+        "gross_sales - refunds - discounts",
+        "gross_sales - refunds - discounts - deferred_delta"
+      ]
+    },
+    "test_r09_lineage_is_traceable": {
+      "chain": [
+        "kpi",
+        "formula",
+        "source_tables",
+        "partitions",
+        "transformations",
+        "model_versions",
+        "analysis",
+        "trust_contract",
+        "narrative"
+      ],
+      "rows_used": 2863
+    },
+    "test_r11_r12_r13_personas_differ": {
+      "sections": {
+        "cfo": [
+          "headline",
+          "exposure",
+          "driver",
+          "limits",
+          "contradicting",
+          "gaps",
+          "decision"
+        ],
+        "ops": [
+          "headline",
+          "operational",
+          "driver",
+          "affected",
+          "limits",
+          "contradicting",
+          "gaps",
+          "decision"
+        ],
+        "fin": [
+          "headline",
+          "decomposition",
+          "driver",
+          "method",
+          "diagnostics",
+          "limits",
+          "contradicting",
+          "gaps",
+          "decision"
+        ]
+      },
+      "recommendations": {
+        "cfo": [
+          "PB-GOV-001",
+          "PB-OPS-001",
+          "PB-PRC-001"
+        ],
+        "ops": [
+          "PB-GOV-001",
+          "PB-OPS-001",
+          "PB-OPS-002"
+        ],
+        "fin": [
+          "PB-GOV-001",
+          "PB-GOV-001",
+          "PB-OPS-001"
+        ]
+      },
+      "word_counts": {
+        "cfo": 722,
+        "ops": 506,
+        "fin": 877
+      }
+    },
+    "test_r14_r15_multifactor_and_decomposition": {
+      "terms": {
+        "D_VOLUME": -4.5219,
+        "D_MIX": -1.9161,
+        "D_PRICE": -1.7093,
+        "D_ENTRY": 0.9292
+      },
+      "total_pp": -7.2181,
+      "distinct_statuses": [
+        "ASSOCIATION_ONLY",
+        "INSUFFICIENT_EVIDENCE",
+        "NOT_POINT_IDENTIFIED",
+        "SUPPORTED_BY_DESIGN"
+      ],
+      "ground_truth_drivers": [
+        "seed",
+        "disruption_region",
+        "disruption_start",
+        "disruption_end",
+        "disruption_units_multiplier",
+        "disruption_lag_days",
+        "competitor_start",
+        "competitor_end",
+        "competitor_line",
+        "competitor_units_multiplier",
+        "marketing_cut_week_start",
+        "marketing_cut_fraction",
+        "marketing_units_multiplier",
+        "price_line",
+        "price_start",
+        "price_increase",
+        "mix_drift_start",
+        "mix_drift"
+      ]
+    },
+    "test_r15b_effect_recovers_ground_truth": {
+      "true_att": -48.326,
+      "estimate": -51.714,
+      "ci95": [
+        -68.166,
+        -35.263
+      ],
+      "p_randomisation": 0.012345679012345678,
+      "n_permutations": 84
+    },
+    "test_r16_r17_low_confidence_and_clarification": {
+      "statuses": [
+        "ASSOCIATION_ONLY",
+        "ASSOCIATION_ONLY",
+        "INSUFFICIENT_EVIDENCE"
+      ],
+      "reason_codes": [
+        "SOURCE_COVERAGE_GAP",
+        "SOURCE_STALE",
+        "UNRESOLVED_CONFOUNDER"
+      ],
+      "question": "Marketing Automation emits no rows for South. Was a marketing campaign active in South between 2026-08-07 and 2026-08-25, and if so at what spend or intensity?",
+      "addressed_to": "marketing operations owner for SRC_MKT"
+    },
+    "test_r18_sparse_history": {
+      "history_days": 21,
+      "benchmark_lines": 4,
+      "clarification": "Subscription ARR (NorthWind Care) has 21 days of history since launch on 2026-08-05. The earliest date a interrupted time series design becomes eligible is 2026-08-25. Do you want a descriptive read now, or a causal read scheduled for 2026-08-25?"
+    },
+    "test_r19_role_based_security_enforced_in_backend": {
+      "denials": [
+        "ROW_SCOPE_VIOLATION",
+        "GRAIN_VIOLATION",
+        "DOMAIN_VIOLATION",
+        "UNKNOWN_PERSONA"
+      ],
+      "ops_window_value": 80230758.53,
+      "cfo_window_value": 285610941.09
+    },
+    "test_r19b_prompt_safety_tripwire": {
+      "note": "restricted data cannot reach a prompt; the tripwire raises first"
+    },
+    "test_r19c_no_entity_leakage_in_narrative": {
+      "runs_checked": 9
+    },
+    "test_r20_every_evidence_object_carries_freshness": {
+      "evidence_objects": 23,
+      "freshness_states": [
+        "CURRENT",
+        "STALE"
+      ]
+    },
+    "test_r21_r22_r23_r24_evidence_fields": {
+      "contribution_kinds": {
+        "ARITHMETIC_CONTRIBUTION": 4,
+        "CAUSAL_EFFECT": 1
+      },
+      "uncertainty_traceable_to": [
+        "identification status",
+        "estimator inference",
+        "robustness checks",
+        "data coverage and freshness"
+      ],
+      "uncertainty_not_derived_from": [
+        "EWHR",
+        "any single confidence number"
+      ]
+    },
+    "test_r23b_ewhr_cannot_produce_a_status": {
+      "statuses": [
+        "ASSOCIATION_ONLY",
+        "INSUFFICIENT_EVIDENCE",
+        "NOT_POINT_IDENTIFIED",
+        "SUPPORTED_BY_DESIGN",
+        "SUPPORTED_BY_INTERVENTION"
+      ],
+      "note": "no threshold on EWHR grants permission to make a causal claim"
+    },
+    "test_r25_llm_boundary_explicit_and_measured": {
+      "non_llm_stages": 25,
+      "llm_roles": [
+        "prose rendering of a narrative plan it cannot alter",
+        "rephrasing a clarification question that was selected deterministically"
+      ],
+      "pct_by_layer": {
+        "NON_LLM": 100.0
+      },
+      "llm_enabled": false
+    },
+    "test_r26_to_r30_telemetry": {
+      "total_ms": 5192.74,
+      "model_calls": 1,
+      "tokens": 4478,
+      "token_source": "ESTIMATED",
+      "usd_per_analysis": 0.0,
+      "projection_month": 0.0
+    },
+    "test_r27b_latency_budget": {
+      "max_ms": 5691.7,
+      "median_ms": 2696.6,
+      "budget_ms": 60000
+    },
+    "test_causal_no_evalue_anywhere": {
+      "note": "the E-value is not computed anywhere in v5; robustness uses placebo, alternative specification, leave-one-control-out and a negative control"
+    },
+    "test_causal_no_fabricated_bounds": {
+      "note": "a non-identified effect carries no interval and states why"
+    },
+    "test_causal_d_separation_textbook_cases": {
+      "cases": [
+        "confounder",
+        "collider",
+        "M-bias",
+        "mediator rejection",
+        "front door",
+        "instrument"
+      ]
+    },
+    "test_causal_identification_separated_from_estimation": {
+      "note": "graphical identification, design eligibility and estimation are separate gates; ITS must qualify on its own terms"
+    },
+    "test_causal_temporal_compatibility_naming_and_grain": {
+      "note": "gate renamed to temporal compatibility; weekly-grain drivers cannot support sub-weekly lag claims"
+    },
+    "test_causal_did_assumptions_and_inference": {
+      "att": -51.714,
+      "se": 7.134,
+      "p_cluster": 8.816050478950597e-05,
+      "p_randomisation": 0.012345679012345678,
+      "n_permutations": 84,
+      "clusters": 9,
+      "parallel_trends": "COMPATIBLE",
+      "fwl_matches_full_regression": true
+    },
+    "test_causal_its_placebo_and_autocorrelation": {
+      "level_change": -232.64,
+      "hac_lags": 4,
+      "placebo": "PASS",
+      "durbin_watson": 1.899
+    },
+    "test_causal_structure_screen_cannot_invent_edges": {
+      "edges_tested": 17,
+      "verdicts": [
+        "INCONCLUSIVE",
+        "NOT_TESTABLE",
+        "SUPPORTED"
+      ],
+      "note": "a failure to reject is INCONCLUSIVE unless the interval also excludes a material association"
+    },
+    "test_causal_multiplicity_control": {
+      "bh": {
+        "q": 0.05,
+        "tested": 1,
+        "rejected": [
+          "H1_FULFILMENT"
+        ],
+        "adjusted": {
+          "H1_FULFILMENT": 0.01235
+        },
+        "threshold": 0.01235,
+        "note": "Benjamini-Hochberg FDR control across all candidate drivers evaluated for this movement. A driver that does not survive correction is reported as not distinguishable from noise once multiplicity is accounted for."
+      }
+    },
+    "test_materiality_two_axes_not_multiplied": {
+      "strong_but_immaterial": {
+        "stat": "STRONG",
+        "impact": "NEGLIGIBLE",
+        "priority": "LOW",
+        "action": "MONITOR"
+      },
+      "weak_but_material": {
+        "stat": "WEAK",
+        "impact": "VERY_HIGH",
+        "priority": "HIGH",
+        "action": "INVESTIGATE"
+      },
+      "matrix_rows": [
+        "MODERATE",
+        "NONE",
+        "STRONG",
+        "WEAK"
+      ]
+    },
+    "test_recommendations_gated_by_licensed_action": {
+      "recommendations": [
+        {
+          "id": "REC-H1_FULFILMENT-PB-OPS-001",
+          "action": "REMEDIATE",
+          "score": 0.3733
+        },
+        {
+          "id": "REC-H4_PRICE-PB-PRC-001",
+          "action": "INVESTIGATE",
+          "score": 0.2217
+        },
+        {
+          "id": "REC-H4_PRICE-PB-GOV-001",
+          "action": "MONITOR",
+          "score": 0.1233
+        }
+      ],
+      "note": "benefit = min(impact, identification_cap); the cap is a ceiling, not a multiplier"
+    },
+    "test_trust_contract_and_validation": {
+      "runs": 9,
+      "checks": [
+        "V1_forbidden_verbs",
+        "V2_number_whitelist",
+        "V3_entity_leakage",
+        "V4_mandatory_sections",
+        "V5_locked_sentences"
+      ]
+    },
+    "test_claim_grammar_blocks_causal_language_when_unidentified": {
+      "note": "forbidden verbs are scanned deterministically; the grammar is keyed by causal status"
+    },
+    "test_degraded_mode_is_a_valid_output": {
+      "note": "if validation fails twice the user receives the structured evidence and locked sentences, which is an answer rather than an error"
+    },
+    "test_intervention_loop_validates_with_the_same_design": {
+      "status": "SUPPORTED_BY_INTERVENTION",
+      "recovery_att": 34.03,
+      "p_randomisation": 0.012346,
+      "post_days": 5
+    },
+    "test_data_quality_exposed_not_hidden": {
+      "defect_kinds": [
+        "COVERAGE_GAP",
+        "DUPLICATE_CONFLICT",
+        "FUTURE_DATED",
+        "LATE_ARRIVAL",
+        "MISSING_VALUE",
+        "SIGN_ERROR",
+        "TIMESTAMP_FORMAT"
+      ],
+      "actions": [
+        "DISCLOSED",
+        "NORMALISED",
+        "QUARANTINED",
+        "RESOLVED_LATEST_INGEST"
+      ],
+      "blocking_gaps": [
+        "SRC_MKT: no data for region=South"
+      ],
+      "stale": [
+        "SRC_MKT"
+      ]
+    },
+    "test_business_calendar_conflicts_surfaced": {
+      "conflicts": [
+        "week_start_mismatch: erp_fiscal=2026-08-09 marketing_iso=2026-08-10",
+        "promo_blackout: PROMO_FREEDOM is excluded from baselines"
+      ],
+      "fiscal_quarter": "FY27-Q2"
+    }
+  }
+}

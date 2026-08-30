@@ -1,0 +1,361 @@
+# ============================================================================
+# RootSight KPI Semantic Contract  --  machine-readable, consumed by the engine
+# ----------------------------------------------------------------------------
+# This file is NOT documentation.  contracts/kpi_contract.py loads it, validates
+# it, and every downstream component (KPI calculation, driver enumeration,
+# threshold evaluation, access control, materiality, lineage) reads it.  An
+# analysis that is not expressible in this contract cannot run.
+# ============================================================================
+contract_version: "5.0.0"
+effective_from: "2026-04-01"
+default_currency: INR
+
+# --------------------------------------------------------------------- sources
+sources:
+  SRC_ERP:
+    name: "ERP / Order Management"
+    system: "SAP-lite (simulated)"
+    tables: [orders_daily, refunds_daily, price_list]
+    grain: "day x region x product_line"
+    calendar: FISCAL
+    refresh_cadence: "daily 02:00 IST batch"
+    expected_lag_hours: 26
+    reliability_weight: 0.95
+    timestamp_convention: "date only, IST business date"
+    access_classification: FINANCIAL
+  SRC_MKT:
+    name: "Marketing Automation"
+    system: "CampaignHub (simulated)"
+    tables: [campaign_weekly]
+    grain: "iso_week x campaign x region"
+    calendar: ISO_WEEK
+    refresh_cadence: "weekly Monday 09:00 IST"
+    expected_lag_hours: 168
+    reliability_weight: 0.80
+    timestamp_convention: "week_start date (Monday)"
+    access_classification: COMMERCIAL
+    known_coverage_gaps:
+      - "Region South not onboarded to CampaignHub (no rows emitted)"
+  SRC_OPS:
+    name: "Warehouse and Support Operations"
+    system: "OpsStream (simulated)"
+    tables: [dispatch_events, support_tickets_daily]
+    grain: "event-level (dispatch) / day x region x category (tickets)"
+    calendar: CALENDAR_DAY
+    refresh_cadence: "near-real-time, 15 minute micro-batch"
+    expected_lag_hours: 1
+    reliability_weight: 0.90
+    timestamp_convention: "MIXED - iso+05:30, naive local, epoch millis"
+    access_classification: OPERATIONAL
+  SRC_EXT:
+    name: "External Competitor Signal"
+    system: "MarketWatch feed (simulated, unverified)"
+    tables: [competitor_promo]
+    grain: "day x product_line (partial)"
+    calendar: CALENDAR_DAY
+    refresh_cadence: "irregular / best-effort"
+    expected_lag_hours: 48
+    reliability_weight: 0.50
+    timestamp_convention: "date only, UTC"
+    access_classification: PUBLIC
+    known_coverage_gaps:
+      - "approximately 40 percent of days unobserved"
+      - "no promotion intensity or discount-depth field"
+
+# ------------------------------------------------------------------- calendars
+calendars:
+  FISCAL: {fiscal_year_start_month: 4, week_start: SUNDAY}
+  ISO_WEEK: {week_start: MONDAY}
+  CALENDAR_DAY: {week_start: MONDAY}
+
+# ------------------------------------------------------------------------ KPIs
+kpis:
+
+  net_revenue:
+    name: "Net Revenue"
+    definition: >
+      Net recognised sales for shipped orders, excluding customer refunds and
+      order-level discounts.  Excludes tax, shipping revenue and marketplace
+      commissions.
+    formula: "gross_sales - refunds - discounts"
+    formula_columns: [gross_sales, refunds, discounts]
+    unit: INR
+    grain: "day x region x product_line"
+    dimensions: [date, region, product_line]
+    time_semantics: "order shipped date, IST business date"
+    calendar: FISCAL
+    data_sources: [SRC_ERP]
+    refresh_cadence: daily
+    allowed_aggregations: [sum]
+    is_additive: true
+    time_aggregation: FLOW   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "finance.revenue@northwind.example"
+    version: "3.1.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: [gross_revenue, recognized_revenue_finance]
+    lineage:
+      calculation: "sum(gross_sales) - sum(refunds) - sum(discounts) per cell"
+      source_tables: [SRC_ERP.orders_daily, SRC_ERP.refunds_daily]
+      transformations: [dq_quarantine, conflict_resolution_latest_ingest, calendar_stamp]
+    thresholds:
+      alert_pct_change: 3.0
+      alert_direction: both
+      min_periods_for_alert: 14
+    materiality_threshold:
+      absolute_inr: 4000000
+      pct_of_segment_revenue: 1.5
+      annualised_multiplier: 12
+    drivers:
+      - {driver_id: units_sold, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: positive}
+      - {driver_id: avg_selling_price, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: positive}
+      - {driver_id: product_mix, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: ambiguous}
+      - {driver_id: on_time_dispatch_rate, kind: CAUSAL_CANDIDATE, source: SRC_OPS, grain: day, expected_sign: positive, prior_lag_days: [2, 5]}
+      - {driver_id: marketing_spend, kind: CAUSAL_CANDIDATE, source: SRC_MKT, grain: iso_week, expected_sign: positive, prior_lag_days: [3, 10]}
+      - {driver_id: competitor_promo, kind: CAUSAL_CANDIDATE, source: SRC_EXT, grain: day, expected_sign: negative, prior_lag_days: [0, 3]}
+      - {driver_id: seasonality, kind: NUISANCE, source: DERIVED, grain: day, expected_sign: ambiguous}
+      - {driver_id: promo_calendar, kind: NUISANCE, source: DERIVED, grain: day, expected_sign: positive}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: [customer_id, customer_email, employee_id, shift_id]}
+      ops_manager: {max_grain: "day x region", row_scope: OWN_REGION, denied_fields: [gross_margin_pct, refund_liability_inr, discount_policy_note, customer_id, customer_email]}
+      finance_analyst: {max_grain: "day x region x product_line", row_scope: ALL, denied_fields: [customer_id, customer_email, employee_id, shift_id]}
+
+  gross_revenue:
+    name: "Gross Revenue"
+    definition: "Invoiced sales before refunds and discounts.  Used for marketplace reporting only."
+    formula: "gross_sales"
+    formula_columns: [gross_sales]
+    unit: INR
+    grain: "day x region x product_line"
+    dimensions: [date, region, product_line]
+    time_semantics: "order placed date"
+    calendar: FISCAL
+    data_sources: [SRC_ERP]
+    refresh_cadence: daily
+    allowed_aggregations: [sum]
+    is_additive: true
+    time_aggregation: FLOW   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "commercial.reporting@northwind.example"
+    version: "1.4.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: [net_revenue, recognized_revenue_finance]
+    lineage: {calculation: "sum(gross_sales)", source_tables: [SRC_ERP.orders_daily], transformations: [dq_quarantine, calendar_stamp]}
+    thresholds: {alert_pct_change: 5.0, alert_direction: both, min_periods_for_alert: 14}
+    materiality_threshold: {absolute_inr: 6000000, pct_of_segment_revenue: 2.0, annualised_multiplier: 12}
+    drivers:
+      - {driver_id: units_sold, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: positive}
+      - {driver_id: list_price, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: positive}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: []}
+      finance_analyst: {max_grain: "day x region x product_line", row_scope: ALL, denied_fields: []}
+      ops_manager: {max_grain: DENIED, row_scope: NONE, denied_fields: [ALL]}
+
+  recognized_revenue_finance:
+    name: "Recognised Revenue (Statutory)"
+    definition: >
+      Revenue recognised under IFRS 15 in the fiscal period, including deferred
+      revenue release and excluding unshipped orders.  Reconciles to the ledger.
+    formula: "gross_sales - refunds - discounts - deferred_delta"
+    formula_columns: [gross_sales, refunds, discounts, deferred_delta]
+    unit: INR
+    grain: "fiscal_period x region"
+    dimensions: [fiscal_period, region]
+    time_semantics: "revenue recognition date, fiscal period close"
+    calendar: FISCAL
+    data_sources: [SRC_ERP]
+    refresh_cadence: "monthly, at period close"
+    allowed_aggregations: [sum]
+    is_additive: true
+    time_aggregation: FLOW   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "controller@northwind.example"
+    version: "2.0.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: [net_revenue, gross_revenue]
+    lineage: {calculation: "net_revenue - deferred_delta, at period close", source_tables: [SRC_ERP.orders_daily, SRC_ERP.refunds_daily], transformations: [period_close_lock]}
+    thresholds: {alert_pct_change: 2.0, alert_direction: both, min_periods_for_alert: 6}
+    materiality_threshold: {absolute_inr: 4000000, pct_of_segment_revenue: 1.0, annualised_multiplier: 12}
+    drivers: []
+    access_restrictions:
+      cfo: {max_grain: "fiscal_period x region", row_scope: ALL, denied_fields: []}
+      finance_analyst: {max_grain: "fiscal_period x region", row_scope: ALL, denied_fields: []}
+      ops_manager: {max_grain: DENIED, row_scope: NONE, denied_fields: [ALL]}
+
+  units_sold:
+    name: "Units Sold"
+    definition: "Net shipped units after returns, at order line level."
+    formula: "units_shipped - units_returned"
+    formula_columns: [units_shipped, units_returned]
+    unit: units
+    grain: "day x region x product_line"
+    dimensions: [date, region, product_line]
+    time_semantics: "order shipped date"
+    calendar: FISCAL
+    data_sources: [SRC_ERP]
+    refresh_cadence: daily
+    allowed_aggregations: [sum]
+    is_additive: true
+    time_aggregation: FLOW   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "supply.planning@northwind.example"
+    version: "2.2.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: []
+    lineage: {calculation: "sum(units_shipped) - sum(units_returned)", source_tables: [SRC_ERP.orders_daily], transformations: [dq_quarantine, calendar_stamp]}
+    thresholds: {alert_pct_change: 4.0, alert_direction: both, min_periods_for_alert: 14}
+    materiality_threshold: {absolute_inr: 4000000, pct_of_segment_revenue: 1.5, annualised_multiplier: 12}
+    drivers:
+      - {driver_id: on_time_dispatch_rate, kind: CAUSAL_CANDIDATE, source: SRC_OPS, grain: day, expected_sign: positive, prior_lag_days: [2, 5]}
+      - {driver_id: complaint_rate, kind: CAUSAL_CANDIDATE, source: SRC_OPS, grain: day, expected_sign: negative, prior_lag_days: [1, 7]}
+      - {driver_id: marketing_spend, kind: CAUSAL_CANDIDATE, source: SRC_MKT, grain: iso_week, expected_sign: positive, prior_lag_days: [3, 10]}
+      - {driver_id: competitor_promo, kind: CAUSAL_CANDIDATE, source: SRC_EXT, grain: day, expected_sign: negative, prior_lag_days: [0, 3]}
+      - {driver_id: avg_selling_price, kind: CAUSAL_CANDIDATE, source: SRC_ERP, grain: day, expected_sign: negative, prior_lag_days: [0, 2]}
+      - {driver_id: seasonality, kind: NUISANCE, source: DERIVED, grain: day, expected_sign: ambiguous}
+      - {driver_id: promo_calendar, kind: NUISANCE, source: DERIVED, grain: day, expected_sign: positive}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: [customer_id, employee_id, shift_id]}
+      ops_manager: {max_grain: "day x region x product_line", row_scope: OWN_REGION, denied_fields: [gross_margin_pct, refund_liability_inr]}
+      finance_analyst: {max_grain: "day x region x product_line", row_scope: ALL, denied_fields: [customer_id, employee_id]}
+
+  avg_selling_price:
+    name: "Average Selling Price"
+    definition: "Net revenue divided by net units sold.  A ratio: not additive."
+    formula: "net_revenue / units_sold"
+    formula_columns: [net_revenue, units_sold]
+    unit: INR_per_unit
+    grain: "day x region x product_line"
+    dimensions: [date, region, product_line]
+    time_semantics: "order shipped date"
+    calendar: FISCAL
+    data_sources: [SRC_ERP]
+    refresh_cadence: daily
+    allowed_aggregations: [weighted_mean_by_units]
+    is_additive: false
+    time_aggregation: RATIO   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "pricing@northwind.example"
+    version: "1.3.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: []
+    lineage: {calculation: "sum(net_revenue)/sum(units_sold) - never the mean of daily ASP", source_tables: [SRC_ERP.orders_daily, SRC_ERP.price_list], transformations: [ratio_guard]}
+    thresholds: {alert_pct_change: 2.0, alert_direction: both, min_periods_for_alert: 14}
+    materiality_threshold: {absolute_inr: 2000000, pct_of_segment_revenue: 0.8, annualised_multiplier: 12}
+    drivers:
+      - {driver_id: list_price, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: positive}
+      - {driver_id: discount_rate, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: negative}
+      - {driver_id: product_mix, kind: DECOMPOSITION, source: SRC_ERP, grain: day, expected_sign: ambiguous}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: []}
+      ops_manager: {max_grain: "day x region", row_scope: OWN_REGION, denied_fields: [gross_margin_pct, discount_policy_note]}
+      finance_analyst: {max_grain: "day x region x product_line", row_scope: ALL, denied_fields: []}
+
+  on_time_dispatch_rate:
+    name: "On-Time Dispatch Rate"
+    definition: "Share of shipments dispatched within the promised SLA window."
+    formula: "dispatched_within_sla / dispatch_attempts"
+    formula_columns: [dispatched_within_sla, dispatch_attempts]
+    unit: ratio
+    grain: "day x warehouse"
+    dimensions: [date, warehouse, region]
+    time_semantics: "dispatch scan timestamp, normalised to IST"
+    calendar: CALENDAR_DAY
+    data_sources: [SRC_OPS]
+    refresh_cadence: "15 minute micro-batch"
+    allowed_aggregations: [weighted_mean_by_attempts]
+    is_additive: false
+    time_aggregation: RATIO   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "fulfilment.ops@northwind.example"
+    version: "4.0.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: []
+    lineage: {calculation: "count(sla_met)/count(attempts) per warehouse-day", source_tables: [SRC_OPS.dispatch_events], transformations: [timestamp_normalise, dq_quarantine, hourly_to_daily]}
+    thresholds: {alert_pct_change: 5.0, alert_direction: down, min_periods_for_alert: 7}
+    materiality_threshold: {absolute_inr: 1500000, pct_of_segment_revenue: 0.5, annualised_multiplier: 12}
+    drivers:
+      - {driver_id: dispatch_backlog, kind: CAUSAL_CANDIDATE, source: SRC_OPS, grain: day, expected_sign: negative, prior_lag_days: [0, 2]}
+      - {driver_id: staffing_index, kind: CAUSAL_CANDIDATE, source: SRC_OPS, grain: day, expected_sign: positive, prior_lag_days: [0, 1]}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: [employee_id, shift_id, staff_productivity_score]}
+      ops_manager: {max_grain: "day x warehouse", row_scope: OWN_REGION, denied_fields: []}
+      finance_analyst: {max_grain: "day x region", row_scope: ALL, denied_fields: [employee_id, shift_id, staff_productivity_score]}
+
+  complaint_rate:
+    name: "Customer Complaint Rate"
+    definition: "Support tickets of complaint type per 1000 shipped orders."
+    formula: "1000 * complaint_tickets / shipped_orders"
+    formula_columns: [complaint_tickets, shipped_orders]
+    unit: per_1000_orders
+    grain: "day x region x ticket_category"
+    dimensions: [date, region, ticket_category]
+    time_semantics: "ticket created timestamp, normalised to IST"
+    calendar: CALENDAR_DAY
+    data_sources: [SRC_OPS, SRC_ERP]
+    refresh_cadence: "15 minute micro-batch (tickets) joined to daily orders"
+    allowed_aggregations: [weighted_mean_by_orders]
+    is_additive: false
+    time_aggregation: RATIO   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "customer.experience@northwind.example"
+    version: "2.1.0"
+    effective_from: "2026-04-01"
+    not_interchangeable_with: []
+    lineage: {calculation: "1000*sum(complaint_tickets)/sum(shipped_orders)", source_tables: [SRC_OPS.support_tickets_daily, SRC_ERP.orders_daily], transformations: [timestamp_normalise, cadence_align_ops_to_erp, dq_quarantine]}
+    thresholds: {alert_pct_change: 10.0, alert_direction: up, min_periods_for_alert: 7}
+    materiality_threshold: {absolute_inr: 1000000, pct_of_segment_revenue: 0.4, annualised_multiplier: 12}
+    drivers:
+      - {driver_id: on_time_dispatch_rate, kind: CAUSAL_CANDIDATE, source: SRC_OPS, grain: day, expected_sign: negative, prior_lag_days: [0, 3]}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: [customer_id, customer_email, ticket_body]}
+      ops_manager: {max_grain: "day x region x ticket_category", row_scope: OWN_REGION, denied_fields: [customer_email]}
+      finance_analyst: {max_grain: "day x region", row_scope: ALL, denied_fields: [customer_id, customer_email, ticket_body]}
+
+  subscription_arr:
+    name: "Subscription ARR (NorthWind Care)"
+    definition: "Annualised recurring revenue from the NorthWind Care subscription, launched 2026-08-05."
+    formula: "12 * monthly_subscription_revenue"
+    formula_columns: [monthly_subscription_revenue]
+    unit: INR
+    grain: "day x region"
+    dimensions: [date, region]
+    time_semantics: "subscription activation date"
+    calendar: CALENDAR_DAY
+    data_sources: [SRC_ERP]
+    refresh_cadence: daily
+    allowed_aggregations: [sum_across_regions]
+    is_additive: true
+    time_aggregation: STOCK   # FLOW=sum over time, STOCK=point in time, RATIO=recompute from components
+    owner: "subscriptions@northwind.example"
+    version: "0.2.0"
+    effective_from: "2026-08-05"
+    launched_on: "2026-08-05"
+    not_interchangeable_with: []
+    lineage: {calculation: "12 * sum(monthly_subscription_revenue)", source_tables: [SRC_ERP.orders_daily], transformations: [calendar_stamp]}
+    thresholds: {alert_pct_change: 15.0, alert_direction: both, min_periods_for_alert: 30}
+    materiality_threshold: {absolute_inr: 800000, pct_of_segment_revenue: 0.3, annualised_multiplier: 1}
+    drivers:
+      - {driver_id: marketing_spend, kind: CAUSAL_CANDIDATE, source: SRC_MKT, grain: iso_week, expected_sign: positive, prior_lag_days: [3, 14]}
+    access_restrictions:
+      cfo: {max_grain: "day x region", row_scope: ALL, denied_fields: [customer_id, customer_email]}
+      ops_manager: {max_grain: DENIED, row_scope: NONE, denied_fields: [ALL]}
+      finance_analyst: {max_grain: "day x region", row_scope: ALL, denied_fields: [customer_id, customer_email]}
+
+# ------------------------------------------------------- declared causal prior
+# Analyst-approved edges.  This is the ONLY structure the identification step is
+# permitted to use.  The statistical structure screen can CONTRADICT an edge
+# (downgrading structural support) but can never invent one.
+kpi_graph:
+  edges:
+    - {from: on_time_dispatch_rate, to: complaint_rate, rationale: "late shipments generate complaints", approved_by: "ops.director", approved_on: "2026-05-02"}
+    - {from: on_time_dispatch_rate, to: units_sold, rationale: "fulfilment reliability affects reorder and cart completion", approved_by: "ops.director", approved_on: "2026-05-02"}
+    - {from: complaint_rate, to: units_sold, rationale: "complaint and review visibility affects conversion", approved_by: "cx.lead", approved_on: "2026-05-11"}
+    - {from: marketing_spend, to: units_sold, rationale: "paid demand generation", approved_by: "cmo", approved_on: "2026-04-20"}
+    - {from: competitor_promo, to: units_sold, rationale: "price-led demand substitution", approved_by: "commercial.lead", approved_on: "2026-06-01"}
+    - {from: avg_selling_price, to: units_sold, rationale: "own-price elasticity", approved_by: "pricing", approved_on: "2026-04-20"}
+    - {from: units_sold, to: net_revenue, rationale: "accounting identity", approved_by: "controller", approved_on: "2026-04-01"}
+    - {from: avg_selling_price, to: net_revenue, rationale: "accounting identity", approved_by: "controller", approved_on: "2026-04-01"}
+    - {from: seasonality, to: units_sold, rationale: "weekly and monsoon demand shape", approved_by: "supply.planning", approved_on: "2026-04-05"}
+    - {from: seasonality, to: on_time_dispatch_rate, rationale: "peak-day volume pressure on dispatch", approved_by: "ops.director", approved_on: "2026-05-02"}
+    - {from: promo_calendar, to: units_sold, rationale: "promotional demand pull-forward", approved_by: "commercial.lead", approved_on: "2026-04-05"}
+    - {from: promo_calendar, to: avg_selling_price, rationale: "promotional discounting", approved_by: "pricing", approved_on: "2026-04-05"}
+    - {from: competitor_promo, to: avg_selling_price, rationale: "defensive discounting response", approved_by: "pricing", approved_on: "2026-06-01"}
+  unobserved:
+    # The observed competitor_promo flag is a noisy PROXY for the unobserved
+    # promotion intensity.  Declaring the proxy edge is what makes the engine
+    # correctly refuse to point-identify a competitor effect.
+    - {node: competitor_promo_intensity, affects: [competitor_promo, units_sold, avg_selling_price], reason: "external feed carries a binary flag only, with no discount-depth or reach field"}
+    - {node: consumer_sentiment_macro, affects: [units_sold], reason: "not instrumented"}

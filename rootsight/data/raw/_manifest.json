@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-08-26T10:05:00+05:30",
+  "as_of": "2026-08-26",
+  "sources": {
+    "SRC_ERP": {
+      "last_refresh_at": "2026-08-26T02:00:00+05:30",
+      "expected_cadence_hours": 24,
+      "row_counts": {
+        "orders_daily": 2875,
+        "refunds_daily": 2863,
+        "price_list": 5
+      }
+    },
+    "SRC_MKT": {
+      "last_refresh_at": "2026-08-10T09:00:00+05:30",
+      "expected_cadence_hours": 168,
+      "row_counts": {
+        "campaign_weekly": 160
+      }
+    },
+    "SRC_OPS": {
+      "last_refresh_at": "2026-08-26T09:53:00+05:30",
+      "expected_cadence_hours": 0.25,
+      "row_counts": {
+        "dispatch_events": 29460,
+        "support_tickets_daily": 3792
+      }
+    },
+    "SRC_EXT": {
+      "last_refresh_at": "2026-08-24T04:05:00+05:30",
+      "expected_cadence_hours": 48,
+      "row_counts": {
+        "competitor_promo": 596
+      }
+    }
+  },
+  "injected_data_quality_defects": {
+    "missing_discounts": 52,
+    "duplicate_conflicts": 12,
+    "negative_units": 3,
+    "mixed_timestamp_formats_in_ops": "iso+05:30 / naive local / epoch millis",
+    "missing_dispatch_durations_pct": 4.5,
+    "marketing_region_coverage_gap": "South (never onboarded)",
+    "marketing_feed_staleness_days": 16,
+    "external_feed_day_coverage_pct": 60,
+    "east_region_arrival_delay_days": 3,
+    "future_dated_ticket_rows_pct": 1.5
+  }
+}

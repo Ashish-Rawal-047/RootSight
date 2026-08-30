@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RootSight v5</title>
+<style>
+:root{
+  --bg:#f7f8fa; --panel:#ffffff; --line:#e2e6ec; --ink:#151b23; --muted:#5d6875;
+  --accent:#1f5f8b; --ok:#1c7a4a; --warn:#9a6708; --bad:#a32b2b; --info:#3b4a8c;
+  --chip:#eef1f5; --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1419; --panel:#161c24; --line:#2a323d; --ink:#e6eaef; --muted:#9aa6b4;
+    --accent:#6fb3e0; --ok:#5cc98d; --warn:#e0b25c; --bad:#e88b8b; --info:#9aa8e8;
+    --chip:#1e2632;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:20;background:var(--panel);
+  border-bottom:1px solid var(--line);padding:10px 18px;display:flex;gap:14px;
+  align-items:center;flex-wrap:wrap}
+h1{font-size:17px;margin:0;letter-spacing:-.2px}
+h1 small{color:var(--muted);font-weight:400;font-size:12px;margin-left:6px}
+select,button{font:inherit;padding:6px 10px;border:1px solid var(--line);
+  border-radius:6px;background:var(--panel);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+main{padding:18px;max-width:1500px;margin:0 auto}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(215px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.09em;
+  color:var(--muted);margin:0 0 10px}
+.card h3{font-size:14px;margin:12px 0 6px}
+.big{font-size:26px;font-weight:600;letter-spacing:-.5px}
+.chip{display:inline-block;padding:2px 8px;border-radius:20px;background:var(--chip);
+  font-size:11px;font-weight:600;letter-spacing:.03em;margin:2px 4px 2px 0;
+  white-space:nowrap}
+.chip.ok{color:var(--ok)} .chip.warn{color:var(--warn)} .chip.bad{color:var(--bad)}
+.chip.info{color:var(--info)} .chip.acc{color:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);
+  vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;
+  letter-spacing:.05em}
+.scroll{overflow-x:auto}
+pre{font-family:var(--mono);font-size:11.5px;background:var(--chip);padding:10px;
+  border-radius:8px;overflow-x:auto;white-space:pre-wrap;margin:0}
+.mono{font-family:var(--mono);font-size:12px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.hyp{border-left:4px solid var(--line)}
+.hyp.s-SUPPORTED_BY_DESIGN{border-left-color:var(--ok)}
+.hyp.s-SUPPORTED_BY_INTERVENTION{border-left-color:var(--ok)}
+.hyp.s-NOT_POINT_IDENTIFIED{border-left-color:var(--warn)}
+.hyp.s-ASSOCIATION_ONLY{border-left-color:var(--info)}
+.hyp.s-INSUFFICIENT_EVIDENCE{border-left-color:var(--muted)}
+.three{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.three>div{border:1px solid var(--line);border-radius:8px;padding:10px}
+details{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px}
+summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--muted)}
+.bar{height:7px;background:var(--chip);border-radius:4px;overflow:hidden;margin-top:3px}
+.bar>i{display:block;height:100%;background:var(--accent)}
+.wf{display:flex;gap:2px;align-items:flex-end;height:120px;margin:8px 0}
+.wf>div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;
+  align-items:center;font-size:10px;color:var(--muted);text-align:center;gap:3px}
+.wf b{display:block;width:100%;border-radius:3px 3px 0 0}
+.boundary{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.boundary>div{border:1px solid var(--line);border-radius:8px;padding:10px}
+.boundary li{font-size:12px;margin-bottom:3px}
+ul{margin:4px 0 0;padding-left:18px}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--line);
+  border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{color:var(--bad);font-weight:600}
+.flow{display:flex;flex-wrap:wrap;gap:4px;align-items:center;font-size:11px}
+.flow span{padding:3px 7px;border:1px solid var(--line);border-radius:5px}
+.flow span.llm{border-color:var(--warn);color:var(--warn)}
+.narr{white-space:pre-wrap;font-size:13.5px;line-height:1.6}
+.narr b{display:block;margin-top:12px;font-size:11px;letter-spacing:.08em;
+  color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>RootSight <small>v5 &middot; causal reasoning layer for KPI movements</small></h1>
+  <select id="scenario"></select>
+  <select id="persona"></select>
+  <button class="primary" id="run">Analyse</button>
+  <button id="tabContract">KPI contract</button>
+  <button id="tabDQ">Data quality</button>
+  <button id="tabSec">Security probe</button>
+  <button id="tabTel">Telemetry</button>
+  <span id="status" class="small muted"></span>
+</header>
+<main>
+  <div id="view" class="grid"></div>
+</main>
+<script>
+const $=(s)=>document.querySelector(s);
+const el=(t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;
+  if(h!==undefined)e.innerHTML=h;return e;};
+const fmt=(x,d=2)=>x===null||x===undefined||Number.isNaN(x)?"&mdash;":
+  Number(x).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+const inr=(x)=>{if(x===null||x===undefined)return "&mdash;";const a=Math.abs(x);
+  const s=x<0?"−":"";
+  if(a>=1e7)return s+"₹"+(a/1e7).toFixed(2)+" cr";
+  if(a>=1e5)return s+"₹"+(a/1e5).toFixed(2)+" L";
+  return s+"₹"+a.toFixed(0);};
+const esc=(s)=>String(s??"").replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const api=async(u,o)=>{const r=await fetch(u,o);const j=await r.json();
+  if(!r.ok)throw Object.assign(new Error(j.detail?.message||j.message||r.statusText),{payload:j,code:r.status});
+  return j;};
+let CONTRACT=null, LAST=null;
+
+const STATUS_CHIP={SUPPORTED_BY_DESIGN:"ok",SUPPORTED_BY_INTERVENTION:"ok",
+  NOT_POINT_IDENTIFIED:"warn",ASSOCIATION_ONLY:"info",INSUFFICIENT_EVIDENCE:"muted"};
+const FRESH_CHIP={CURRENT:"ok",LAGGING:"warn",STALE:"bad",MISSING:"bad",UNKNOWN:"muted"};
+
+async function boot(){
+  const [sc,pe,ct]=await Promise.all([api("/api/scenarios"),api("/api/personas"),api("/api/contract")]);
+  CONTRACT=ct;
+  $("#scenario").innerHTML=sc.scenarios.map(s=>
+    `<option value="${s.scenario_id}">${esc(s.scenario_id)} &mdash; ${esc(s.title)}</option>`).join("");
+  $("#persona").innerHTML=pe.personas.map(p=>
+    `<option value="${p.persona_id}">${esc(p.display_name)} &mdash; ${esc(p.title)}</option>`).join("");
+  run();
+}
+async function run(){
+  const body={scenario_id:$("#scenario").value,persona_id:$("#persona").value};
+  $("#status").innerHTML='<span class="spinner"></span> analysing&hellip;';
+  const t0=performance.now();
+  try{
+    LAST=await api("/api/analyse",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(body)});
+    $("#status").innerHTML=`${Math.round(performance.now()-t0)} ms round-trip &middot; `+
+      `${LAST.telemetry.latency.total_ms.toFixed(0)} ms server`;
+    render(LAST);
+  }catch(e){
+    $("#status").innerHTML='<span class="err">'+esc(e.message)+"</span>";
+    $("#view").innerHTML="";
+    $("#view").appendChild(el("div","card",
+      `<h2>Refused</h2><p class="err">HTTP ${e.code}</p><pre>${esc(JSON.stringify(e.payload,null,2))}</pre>
+       <p class="small muted">Refused server-side by the policy engine before any data was read.</p>`));
+  }
+}
+
+function render(r){
+  const v=$("#view"); v.innerHTML="";
+  v.appendChild(flowCard(r));
+  v.appendChild(headlineCard(r));
+  v.appendChild(connectedCard(r));
+  if(r.decomposition) v.appendChild(decompCard(r));
+  if(r.abstention) v.appendChild(abstainCard(r));
+  r.hypotheses.forEach(h=>v.appendChild(hypCard(h,r)));
+  v.appendChild(narrativeCard(r));
+  v.appendChild(recCard(r));
+  v.appendChild(evidenceCard(r));
+  v.appendChild(lineageCard(r));
+  v.appendChild(boundaryCard(r));
+  v.appendChild(telCard(r));
+}
+
+function flowCard(r){
+  const c=el("div","card");
+  c.appendChild(el("h2",null,"Pipeline &middot; every stage below the LLM line is deterministic"));
+  const stages=["data","KPI semantics","movement","multi-source evidence","driver analysis",
+    "causal identification","uncertainty / abstention","persona decision","trust contract",
+    "constrained narrative","action","validation","telemetry"];
+  const f=el("div","flow");
+  stages.forEach((s,i)=>{
+    f.appendChild(el("span",s==="constrained narrative"?"llm":null,esc(s)));
+    if(i<stages.length-1) f.appendChild(el("span","muted","&rarr;"));
+  });
+  c.appendChild(f);
+  c.appendChild(el("p","small muted",
+    `Scenario <b>${esc(r.scenario.scenario_id)}</b>. ${esc(r.scenario.subtitle)}<br>`+
+    `Expected outcome recorded in the scenario registry: ${esc(r.scenario.expected_outcome)}`));
+  return c;
+}
+
+function headlineCard(r){
+  const m=r.movement, c=el("div","card");
+  c.appendChild(el("h2",null,"KPI movement"));
+  const k=r.kpi_contract;
+  c.appendChild(el("div",null,
+    `<div class="big">${esc(k.name)} ${m.pct_change===null?"&mdash;":fmt(m.pct_change)+"%"}</div>
+     <div class="small muted">${esc(k.definition)}</div>`));
+  const chips=el("div",null,"");
+  chips.innerHTML=
+    `<span class="chip ${m.threshold_breached?"bad":"ok"}">threshold ${m.threshold_pct}% ${m.threshold_breached?"breached":"not breached"}</span>`+
+    `<span class="chip ${m.detected?"acc":"muted"}">changepoint ${m.changepoint_date??"none"}</span>`+
+    `<span class="chip info">p = ${m.p_value===null?"n/a":fmt(m.p_value,4)}</span>`+
+    `<span class="chip">${esc(m.method)}</span>`+
+    `<span class="chip">grain ${esc(r.persona.access_decision.effective_grain)}</span>`+
+    `<span class="chip">regions ${esc(r.persona.access_decision.allowed_regions.join(", "))}</span>`;
+  c.appendChild(chips);
+  const t=el("table");
+  t.innerHTML=`<tr><th>Focus window</th><td>${m.focus_window.join(" → ")}</td>
+    <th>Focus value/day</th><td>${inr(m.focus_value)}</td></tr>
+    <tr><th>Baseline window</th><td>${m.baseline_window.join(" → ")}</td>
+    <th>Baseline value/day</th><td>${inr(m.baseline_value)}</td></tr>
+    <tr><th>Formula</th><td class="mono">${esc(k.formula)}</td>
+    <th>Time semantics</th><td>${esc(k.time_aggregation)} &middot; ${esc(k.time_semantics)}</td></tr>`;
+  c.appendChild(t);
+  if(m.notes?.length) c.appendChild(el("ul",null,m.notes.map(n=>`<li class="small muted">${esc(n)}</li>`).join("")));
+  if(m.calendar_exclusions?.length) c.appendChild(el("p","small muted",
+    `Calendar: ${m.calendar_exclusions.length} promotional day(s) excluded from the baseline (declared promo blackout).`));
+  return c;
+}
+
+function connectedCard(r){
+  const c=el("div","card");
+  c.appendChild(el("h2",null,"Connected KPIs &middot; same windows, per-role entitlement"));
+  const g=el("div","grid g4");
+  r.connected_kpis.forEach(k=>{
+    const d=el("div","card");
+    if(!k.granted){
+      d.innerHTML=`<div class="small"><b>${esc(k.kpi_id)}</b></div>
+        <span class="chip bad">no entitlement</span>
+        <div class="small muted">${esc(k.denied_reason||"")}</div>`;
+    }else{
+      d.innerHTML=`<div class="small"><b>${esc(k.name)}</b></div>
+        <div class="big">${k.pct_change===null?"&mdash;":fmt(k.pct_change)+"%"}</div>
+        <span class="chip ${k.threshold_breached?"bad":"ok"}">thr ${k.threshold_pct}%</span>
+        <span class="chip">${esc(k.time_aggregation)}</span>
+        <span class="chip">${esc(k.grain)}</span>
+        <div class="small muted">${esc(k.sources.join(", "))} &middot; cp ${k.changepoint_date??"none"}</div>`;
+    }
+    g.appendChild(d);
+  });
+  c.appendChild(g);
+  const fr=r.data_quality.freshness;
+  const f=el("div",null,"<h3>Source freshness</h3>");
+  Object.entries(fr).forEach(([s,x])=>{
+    f.innerHTML+=`<span class="chip ${FRESH_CHIP[x.status]||"muted"}">${esc(s)} ${x.status}
+      &middot; ${(x.age_hours/24).toFixed(1)}d old &middot; expects ${(x.expected_cadence_hours/24).toFixed(2)}d
+      &middot; data to ${x.data_period_end??"?"}${x.coverage_pct!==null&&x.coverage_pct!==undefined?" &middot; cov "+x.coverage_pct+"%":""}</span>`;
+  });
+  c.appendChild(f);
+  return c;
+}
+
+function decompCard(r){
+  const d=r.decomposition, c=el("div","card");
+  c.appendChild(el("h2",null,"Accounting decomposition &middot; exact identity, NOT causal"));
+  const max=Math.max(...d.terms.map(t=>Math.abs(t.value_pp)),Math.abs(d.total_change_pp));
+  const wf=el("div","wf");
+  d.terms.concat([{term_id:"TOTAL",label:"Total",value_pp:d.total_change_pp,
+    value_abs:d.total_change_abs_per_day}]).forEach(t=>{
+    const h=Math.max(4,Math.abs(t.value_pp)/max*90);
+    const col=t.term_id==="TOTAL"?"var(--accent)":(t.value_pp<0?"var(--bad)":"var(--ok)");
+    wf.appendChild(el("div",null,
+      `<span>${t.value_pp>0?"+":""}${fmt(t.value_pp)}pp</span>
+       <b style="height:${h}px;background:${col}"></b>
+       <span>${esc(t.label)}</span>`));
+  });
+  c.appendChild(wf);
+  const t=el("table");
+  t.innerHTML="<tr><th>Term</th><th>pp of baseline</th><th>INR/day</th><th>Share of change</th><th>Interpretation</th></tr>"+
+    d.terms.map(x=>`<tr><td><b>${esc(x.label)}</b><br><span class="chip">${esc(x.kind)}</span></td>
+      <td>${x.value_pp>0?"+":""}${fmt(x.value_pp)}</td><td>${inr(x.value_abs)}</td>
+      <td>${fmt(x.share_of_change_pct,1)}%</td>
+      <td class="small muted">${esc(x.interpretation)}</td></tr>`).join("");
+  c.appendChild(el("div","scroll")).appendChild(t);
+  c.appendChild(el("p","small",
+    `<span class="chip ${d.identity_closes?"ok":"bad"}">identity closes, residual ${d.residual_abs}</span>
+     <span class="chip">${d.cells_common} common cells</span>
+     ${d.cells_entered.length?`<span class="chip warn">entered: ${esc(d.cells_entered.join(", "))}</span>`:""}`));
+  c.appendChild(el("ul",null,d.caveats.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")));
+  const det=el("details",null,"<summary>Per-cell detail</summary>");
+  d.terms.forEach(x=>{ if(x.detail?.length) det.innerHTML+=
+    `<h3>${esc(x.label)}</h3><pre>${esc(JSON.stringify(x.detail,null,1))}</pre>`;});
+  c.appendChild(det);
+  return c;
+}
+
+function abstainCard(r){
+  const a=r.abstention, c=el("div","card");
+  c.appendChild(el("h2",null,"Abstention &middot; the system declines to explain"));
+  c.appendChild(el("div",null,`<div class="big">I don't know &mdash; and here is why</div>
+    <p class="small">${esc(a.explanation)}</p>
+    ${a.reason_codes.map(x=>`<span class="chip warn">${esc(x)}</span>`).join("")}`));
+  if(a.clarification){
+    const cl=a.clarification;
+    c.appendChild(el("div","card",
+      `<h3>Clarification request</h3>
+       <p><b>${esc(cl.question)}</b></p>
+       <p class="small muted">Why it matters: ${esc(cl.why_it_matters)}</p>
+       <p class="small">Addressed to: <b>${esc(cl.addressed_to)}</b><br>
+          Would resolve: ${esc(cl.would_resolve)}</p>
+       <span class="chip">${esc(cl.gap_code)}</span>
+       <span class="chip info">${esc(cl.selected_by)}</span>`));
+  }
+  if(a.alternatives_offered?.length) c.appendChild(el("p","small muted",
+    "Offered instead: "+a.alternatives_offered.map(esc).join(" &middot; ")));
+  if(r.benchmark){
+    const b=el("div","card","<h3>Descriptive read and comparable benchmark</h3>");
+    b.innerHTML+="<ul>"+r.benchmark.lines.map(l=>`<li class="small">${esc(l.text)}</li>`).join("")+"</ul>";
+    b.innerHTML+=`<p class="small muted">${esc(r.benchmark.caveat)}</p>`;
+    (r.benchmark.downgrades||[]).forEach(d=>b.innerHTML+=`<span class="chip warn">${esc(d)}</span>`);
+    c.appendChild(b);
+  }
+  return c;
+}
+
+function hypCard(h,r){
+  const c=el("div","card hyp s-"+h.causal_status);
+  const m=h.materiality||{}, e=h.effect||{};
+  c.appendChild(el("h2",null,
+    `#${h.ewhr.rank} &nbsp; ${esc(h.hypothesis_id)} &nbsp; <span class="chip ${STATUS_CHIP[h.causal_status]}">${esc(h.causal_status)}</span>`));
+  c.appendChild(el("div",null,`<div class="big">${esc(h.label)}</div>
+    <p class="small muted">${esc(h.mechanism)}</p>`));
+  const three=el("div","three");
+
+  // 1 evidence & method
+  let a=`<h3>Evidence &amp; method</h3>`;
+  const t=h.temporal||{};
+  a+=`<div class="small">Temporal compatibility: <span class="chip ${t.passed?"ok":"bad"}">${t.passed?"PASS":"FAIL"}</span>`;
+  if(t.best_lag!==undefined&&t.best_lag!==null) a+=` lag ${t.best_lag}d, |r| ${fmt(Math.abs(t.best_corr||0))}`;
+  a+="</div>";
+  (t.failure_codes||[]).forEach(x=>a+=`<span class="chip bad">${esc(x)}</span>`);
+  a+=`<div class="small">Structure screen: <span class="chip ${h.structural_support==="SUPPORTED"?"ok":h.structural_support==="CONTRADICTED"?"bad":"warn"}">${esc(h.structural_support)}</span></div>`;
+  a+=`<div class="small">Graphical: <span class="chip ${(h.graphical?.strategy&&h.graphical.strategy!=="NONE")?"ok":"bad"}">${esc(h.graphical?.strategy||"n/a")}</span>
+      ${h.graphical?.adjustment_set?.length?`adjust for ${esc(h.graphical.adjustment_set.join(", "))}`:""}</div>`;
+  (h.designs||[]).forEach(d=>a+=`<div class="small">${esc(d.design)}: <span class="chip ${d.eligible?"ok":"bad"}">${d.eligible?"eligible":"not eligible"}</span></div>`);
+  three.appendChild(el("div",null,a));
+
+  // 2 causal status & effect
+  let b=`<h3>Causal status</h3><div class="small"><span class="chip ${STATUS_CHIP[h.causal_status]}">${esc(h.causal_status)}</span></div>`;
+  if(e.kind==="POINT_WITH_CI"){
+    b+=`<div class="big">${e.point_estimate>0?"+":""}${fmt(e.point_estimate)}</div>
+        <div class="small muted">${esc(e.unit)}</div>
+        <div class="small">95% CI ${fmt(e.confidence_interval[0])} to ${fmt(e.confidence_interval[1])}
+        <br>p = ${fmt(e.p_value_primary,4)} <span class="muted">(${esc(e.p_value_primary_basis)})</span></div>
+        <div class="small muted">${esc(e.estimand)}</div>`;
+  }else{
+    b+=`<div class="small"><b>No point estimate.</b> ${esc(e.interval_withheld_reason||"")}</div>`;
+    if(e.observed_association?.value!==undefined&&e.observed_association?.value!==null)
+      b+=`<div class="small">Observed association ${fmt(e.observed_association.value)} at lag ${e.observed_association.lag_days}d
+          <span class="chip info">association, not effect</span></div>`;
+  }
+  three.appendChild(el("div",null,b));
+
+  // 3 materiality & decision
+  let d=`<h3>Materiality &amp; decision</h3>`;
+  d+=`<div class="small">Statistical evidence <span class="chip ${m.statistical_tier==="STRONG"?"ok":m.statistical_tier==="NONE"?"bad":"warn"}">${esc(m.statistical_tier)}</span></div>`;
+  d+=`<div class="small">Business impact <span class="chip ${["VERY_HIGH","HIGH"].includes(m.impact_tier)?"bad":"info"}">${esc(m.impact_tier)}</span></div>`;
+  d+=`<div class="small">Decision priority <span class="chip acc">${esc(m.decision_priority)}</span></div>`;
+  d+=`<div class="small">Licensed action <span class="chip ${m.action_type==="REMEDIATE"?"ok":"warn"}">${esc(m.action_type)}</span></div>`;
+  d+=`<div class="small">Exposure ${inr(m.exposure?.inr_per_day)}/day &middot; ${inr(m.impact_basis?.exposure_inr_per_month)}/month
+      &middot; ${fmt(m.impact_basis?.ratio_to_threshold)}&times; threshold</div>`;
+  d+=`<div class="small muted">${esc(m.exposure?.derivation||"")}</div>`;
+  (m.warnings||[]).forEach(w=>d+=`<p class="small warn"><span class="chip warn">note</span> ${esc(w)}</p>`);
+  three.appendChild(el("div",null,d));
+  c.appendChild(three);
+
+  // EWHR components
+  const ew=el("details",null,`<summary>EWHR ${fmt(h.ewhr.score,3)} &mdash; attention rank only, not a probability</summary>`);
+  Object.entries(h.ewhr.dimensions).forEach(([k,x])=>{
+    ew.innerHTML+=`<div class="small">${esc(k)} &middot; weight ${h.ewhr.weights[k]}
+      <div class="bar"><i style="width:${(x.value*100).toFixed(0)}%"></i></div>
+      <span class="muted">${fmt(x.value,3)} &mdash; ${esc(x.basis)}</span></div>`;
+  });
+  ew.innerHTML+=`<p class="small muted">is_probability: ${h.ewhr.is_probability}. ${esc(h.ewhr.meaning)}</p>`;
+  ew.innerHTML+="<ul>"+h.ewhr.caveats.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")+"</ul>";
+  c.appendChild(ew);
+
+  // assumptions
+  if(h.assumptions?.length){
+    const as=el("details",null,"<summary>Assumption table</summary>");
+    as.innerHTML+="<div class='scroll'><table><tr><th>Id</th><th>Assumption</th><th>Status</th><th>Evidence</th><th>Testable</th></tr>"+
+      h.assumptions.map(x=>`<tr><td>${esc(x.id)}</td><td>${esc(x.name)}<br><span class="small muted">${esc(x.requires)}</span></td>
+        <td><span class="chip ${x.status==="SATISFIED"?"ok":x.status==="VIOLATED"?"bad":x.status==="NOT_APPLICABLE"?"muted":"warn"}">${esc(x.status)}</span></td>
+        <td class="small">${esc(x.evidence)}</td><td class="small">${x.testable_from_this_data?"yes":"no"}</td></tr>`).join("")+"</table></div>";
+    c.appendChild(as);
+  }
+  // robustness
+  if(h.robustness?.checks?.length){
+    const rb=el("details",null,"<summary>Robustness (no E-value in v5 &mdash; see note)</summary>");
+    rb.innerHTML+=`<p class="small muted">${esc(h.robustness.note||"")}</p><pre>${esc(JSON.stringify(h.robustness.checks,null,1))}</pre>`;
+    c.appendChild(rb);
+  }
+  if(h.notes?.length) c.appendChild(el("ul",null,h.notes.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")));
+  return c;
+}
+
+function narrativeCard(r){
+  const n=r.narrative, c=el("div","card");
+  c.appendChild(el("h2",null,"Constrained narrative &middot; Causal Claim Compiler output"));
+  c.appendChild(el("div",null,
+    `<span class="chip ${n.validation.passed?"ok":"bad"}">validation ${n.validation.passed?"PASSED":"FAILED"}</span>
+     <span class="chip ${n.degraded?"warn":"acc"}">${esc(n.render_mode)}</span>
+     <span class="chip">${n.word_count} words / max ${r.trust_contract.max_words}</span>
+     <span class="chip">${n.llm_calls} model call(s)</span>
+     <span class="chip mono">contract ${esc(n.contract_hash)}</span>`));
+  c.appendChild(el("div","narr",esc(n.text)));
+  if(n.notes?.length) c.appendChild(el("ul",null,n.notes.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")));
+  const v=el("details",null,"<summary>Validation checks</summary>");
+  v.innerHTML+="<div class='scroll'><table><tr><th>Check</th><th>Result</th><th>Detail</th></tr>"+
+    n.validation.checks.map(x=>`<tr><td class="mono">${esc(x.check)}</td>
+      <td><span class="chip ${x.passed?"ok":"bad"}">${x.passed?"pass":"fail"}</span></td>
+      <td class="small mono">${esc(JSON.stringify(Object.fromEntries(Object.entries(x).filter(([k])=>!["check","passed","note"].includes(k)))).slice(0,320))}</td></tr>`).join("")+"</table></div>";
+  if(n.validation.violations?.length) v.innerHTML+=`<pre>${esc(JSON.stringify(n.validation.violations,null,1))}</pre>`;
+  c.appendChild(v);
+  const tc=el("details",null,"<summary>Trust Contract (machine-readable, built before the model)</summary>");
+  const t=r.trust_contract;
+  tc.innerHTML+=`<div class="small">
+    <span class="chip">${esc(t.causal_status)}</span>
+    <span class="chip">${esc(t.display_label)}</span>
+    <span class="chip">${t.allowed_numbers.length} allowed numbers</span>
+    <span class="chip">${t.allowed_entities.length} allowed entities</span>
+    <span class="chip">${t.allowed_verbs.length} allowed verbs</span>
+    <span class="chip bad">${t.forbidden_verbs.length} forbidden verbs</span></div>
+    <h3>Allowed verbs</h3><p class="small mono">${t.allowed_verbs.map(esc).join(" &middot; ")}</p>
+    <h3>Forbidden verbs</h3><p class="small mono">${t.forbidden_verbs.map(esc).join(" &middot; ")}</p>
+    <h3>Quantification rule</h3><p class="small">${esc(t.quantification_rule)}</p>
+    <h3>The model may decide</h3><ul>${t.llm_may_decide.map(x=>`<li class="small">${esc(x)}</li>`).join("")}</ul>
+    <h3>The model may not decide</h3><ul>${t.llm_may_not_decide.map(x=>`<li class="small">${esc(x)}</li>`).join("")}</ul>
+    <details><summary>Full JSON</summary><pre>${esc(JSON.stringify(t,null,1))}</pre></details>`;
+  c.appendChild(tc);
+  const pl=el("details",null,"<summary>Narrative plan (deterministic, no model)</summary>");
+  pl.innerHTML+=`<pre>${esc(JSON.stringify(r.narrative_plan,null,1))}</pre>`;
+  c.appendChild(pl);
+  return c;
+}
+
+function recCard(r){
+  const c=el("div","card");
+  c.appendChild(el("h2",null,"Recommended actions &middot; persona-specific, playbook-sourced"));
+  if(!r.recommendations.length){
+    c.appendChild(el("p","small muted","No action licensed by the evidence for this persona."));
+    return c;
+  }
+  const g=el("div","grid g3");
+  r.recommendations.forEach(x=>{
+    const d=el("div","card");
+    d.innerHTML=`<div class="small"><b>${esc(x.title)}</b></div>
+      <span class="chip ${x.action_type==="REMEDIATE"?"ok":"warn"}">${esc(x.action_type)}</span>
+      <span class="chip acc">score ${fmt(x.score,3)}</span>
+      <span class="chip">cost ${esc(x.cost_band)}</span>
+      <span class="chip">reversibility ${esc(x.reversibility)}</span>
+      <span class="chip">impact in ${x.time_to_impact_days.join("&ndash;")}d</span>
+      <p class="small">${esc(x.persona_framing)}</p>
+      <p class="small muted">owner ${esc(x.owner)} &middot; playbook ${esc(x.playbook_id)} (${esc(x.catalogue_version)})</p>
+      ${x.conflicts_with.length?`<span class="chip bad">conflicts on ${esc(x.resource_dimension)}</span>`:""}
+      <details><summary>Score components</summary><pre>${esc(JSON.stringify(x.score_components,null,1))}</pre></details>`;
+    g.appendChild(d);
+  });
+  c.appendChild(g);
+  const btn=el("button","primary","Record intervention &amp; validate (closes the loop)");
+  btn.onclick=async()=>{
+    btn.disabled=true; btn.textContent="running post-intervention design…";
+    try{
+      const res=await api("/api/intervention",{method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({persona_id:$("#persona").value,
+          hypothesis_id:r.hypotheses[0].hypothesis_id,
+          playbook_id:r.recommendations[0].playbook_id,
+          implemented_on:"2026-08-20"})});
+      const p=res.post_intervention_estimate;
+      c.appendChild(el("div","card",
+        `<h3>Post-intervention validation</h3>
+         <span class="chip ${res.promotion.criteria_met?"ok":"warn"}">${esc(res.promotion.new_status)}</span>
+         <div class="small">Recovery ATT ${fmt(p.att_per_unit_day)} units/cell/day
+           (95% CI ${fmt(p.ci95[0])} to ${fmt(p.ci95[1])}), exact RI p = ${fmt(p.p_randomisation,4)},
+           ${p.post_periods} post days, ${p.n_clusters} clusters.</div>
+         <p class="small muted">${esc(res.promotion.honest_caveat)}</p>
+         <ul>${res.promotion.criteria.map(x=>`<li class="small">${esc(x)}</li>`).join("")}</ul>
+         <p class="small mono">audit ${esc(res.audit_event)}</p>`));
+    }catch(e){ c.appendChild(el("p","err",esc(e.message))); }
+    btn.disabled=false; btn.textContent="Record intervention & validate (closes the loop)";
+  };
+  c.appendChild(btn);
+  return c;
+}
+
+function evidenceCard(r){
+  const c=el("div","card");
+  c.appendChild(el("h2",null,"Evidence objects &middot; freshness, method, contribution, confidence, lineage"));
+  const rows=r.evidence.map(e=>`<tr>
+    <td class="mono">${esc(e.evidence_id)}</td>
+    <td><span class="chip ${e.support_or_contradiction==="SUPPORTS"?"ok":e.support_or_contradiction==="CONTRADICTS"?"bad":e.support_or_contradiction==="GAP"?"warn":"info"}">${esc(e.support_or_contradiction)}</span></td>
+    <td>${esc(e.source_type)}<br><span class="small muted">${esc(e.source_id)}</span></td>
+    <td>${esc(e.entity)}</td>
+    <td>${esc(e.metric)}</td>
+    <td>${typeof e.value==="number"?fmt(e.value):esc(e.value)}<br><span class="small muted">${esc(e.unit)}</span></td>
+    <td><span class="chip ${FRESH_CHIP[e.freshness.status]||"muted"}">${esc(e.freshness.status)}</span><br>
+        <span class="small muted">${e.freshness.age_hours!==null&&e.freshness.age_hours!==undefined?(e.freshness.age_hours/24).toFixed(1)+"d":""}</span></td>
+    <td class="small">${esc(e.period)}<br><span class="muted">${esc(e.grain)}</span></td>
+    <td class="small">${esc(e.method)}</td>
+    <td class="small">${e.contribution?`${esc(e.contribution.kind)}: ${fmt(e.contribution.value)} ${esc(e.contribution.unit)}<br><span class="chip ${e.contribution.is_causal?"ok":"info"}">${e.contribution.is_causal?"causal":"arithmetic"}</span>`:"&mdash;"}</td>
+    <td>${fmt(e.confidence,3)}<div class="bar"><i style="width:${(e.confidence*100).toFixed(0)}%"></i></div></td>
+    <td><span class="chip">${esc(e.access_classification)}</span></td>
+    <td><details><summary>lineage</summary><pre>${esc(JSON.stringify(e.lineage,null,1).slice(0,2200))}</pre>
+        <p class="small muted">${esc(e.note||"")}</p>
+        <pre>${esc(JSON.stringify(e.confidence_components,null,1))}</pre></details></td></tr>`).join("");
+  const t=el("table");
+  t.innerHTML="<tr><th>Id</th><th>Stance</th><th>Source</th><th>Entity</th><th>Metric</th><th>Value</th>"+
+    "<th>Freshness</th><th>Period / grain</th><th>Method</th><th>Contribution</th><th>Confidence</th><th>Class</th><th>Lineage</th></tr>"+rows;
+  c.appendChild(el("div","scroll")).appendChild(t);
+  c.appendChild(el("p","small muted",
+    "Retrieval policy: top-N supporting evidence by confidence; ALL contradicting evidence and ALL data gaps, never truncated."));
+  return c;
+}
+
+function lineageCard(r){
+  const c=el("div","card");
+  c.appendChild(el("h2",null,"Lineage &middot; where did this number come from?"));
+  const k=r.kpi_contract;
+  c.appendChild(el("div","small",
+    `<b>${esc(k.kpi_id)}</b> &rarr; <span class="mono">${esc(k.calculation)}</span> &rarr;
+     ${esc((k.source_tables||[]).join(", "))} &rarr;
+     ${esc((k.transformations||[]).join(" &rarr; "))} &rarr;
+     model versions &rarr; analysis &rarr; trust contract ${esc(r.trust_contract.contract_hash)} &rarr; narrative`));
+  const t=el("table");
+  t.innerHTML=`<tr><th>Owner</th><td>${esc(k.owner)}</td><th>Contract version</th><td>${esc(k.contract_version)}</td></tr>
+    <tr><th>Registry hash</th><td class="mono">${esc(k.registry_hash)}</td><th>Effective from</th><td>${esc(k.effective_from)}</td></tr>
+    <tr><th>Rows used</th><td>${k.source_rows_used}</td><th>Partitions</th><td class="small">${esc((k.source_partitions||[]).join(", "))}</td></tr>
+    <tr><th>Sample source rows</th><td colspan="3" class="mono small">${esc((k.sample_source_row_ids||[]).join(", "))}</td></tr>
+    <tr><th>Row scope applied</th><td>${esc((k.row_scope_applied||[]).join(", "))}</td>
+        <th>Fields withheld</th><td class="small">${esc((k.column_scope_applied||[]).join(", "))||"none"}</td></tr>
+    <tr><th>Not interchangeable with</th><td colspan="3">${esc((k.not_interchangeable_with||[]).join(", "))||"n/a"}</td></tr>`;
+  c.appendChild(t);
+  const gt=el("details",null,"<summary>Grain, cadence and calendar reconciliation</summary>");
+  gt.innerHTML+="<div class='scroll'><table><tr><th>Id</th><th>Source</th><th>From grain</th><th>To grain</th><th>Method</th><th>Temporal resolution</th><th>Imputed</th><th>Note</th></tr>"+
+    r.grain_transforms.map(x=>`<tr><td class="mono">${esc(x.transform_id)}</td><td>${esc(x.source_id)}</td>
+      <td class="small">${esc(x.from_grain)}</td><td class="small">${esc(x.to_grain)}</td>
+      <td class="small mono">${esc(x.method)}</td><td><span class="chip ${x.temporal_resolution_days>1?"warn":"ok"}">${x.temporal_resolution_days}d</span></td>
+      <td>${x.is_imputed?'<span class="chip warn">yes</span>':"no"}</td>
+      <td class="small muted">${esc(x.note)}</td></tr>`).join("")+"</table></div>";
+  gt.innerHTML+="<ul>"+r.calendar_notes.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")+"</ul>";
+  c.appendChild(gt);
+  const au=el("details",null,"<summary>Audit events for this request</summary>");
+  au.innerHTML+=`<pre>${esc(JSON.stringify(r.audit_events,null,1))}</pre>`;
+  c.appendChild(au);
+  const gr=el("details",null,"<summary>Declared causal graph &amp; structure screen</summary>");
+  gr.innerHTML+=`<p class="small muted">${esc(r.structural_evidence.method)}</p>`;
+  gr.innerHTML+="<div class='scroll'><table><tr><th>Edge</th><th>Conditioned on</th><th>Partial r</th><th>p</th><th>n</th><th>Verdict</th><th>Stability</th><th>Reason</th></tr>"+
+    r.structural_evidence.edges.map(e=>`<tr><td class="mono small">${esc(e.source)} &rarr; ${esc(e.target)}</td>
+      <td class="small">${esc((e.conditioned_on||[]).join(", "))||"trend only"}</td>
+      <td>${e.partial_corr===null?"&mdash;":fmt(e.partial_corr,3)}</td><td>${e.p_value===null?"&mdash;":fmt(e.p_value,4)}</td>
+      <td>${e.n}</td><td><span class="chip ${e.verdict==="SUPPORTED"?"ok":e.verdict==="CONTRADICTED"?"bad":"warn"}">${esc(e.verdict)}</span></td>
+      <td>${fmt(e.stability,2)}</td><td class="small muted">${esc(e.reason)}</td></tr>`).join("")+"</table></div>";
+  gr.innerHTML+="<ul>"+r.structural_evidence.notes.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")+"</ul>";
+  gr.innerHTML+=`<h3>Declared unobserved nodes</h3><pre>${esc(JSON.stringify(r.causal_graph.unobserved,null,1))}</pre>`;
+  c.appendChild(gr);
+  const mc=el("details",null,"<summary>Multiple-comparison control</summary>");
+  mc.innerHTML+=`<pre>${esc(JSON.stringify(r.multiplicity,null,1))}</pre>`;
+  c.appendChild(mc);
+  return c;
+}
+
+function boundaryCard(r){
+  const b=r.llm_boundary, c=el("div","card");
+  c.appendChild(el("h2",null,"LLM vs non-LLM boundary &middot; measured, not asserted"));
+  const g=el("div","boundary");
+  g.appendChild(el("div",null,`<h3>Deterministic (no model)</h3>
+    <ul>${b.non_llm.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`));
+  g.appendChild(el("div",null,`<h3>Model</h3>
+    <ul>${b.llm.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h3>The model must not</h3>
+    <ul>${b.llm_must_not.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <h3>How that is enforced</h3>
+    <ul>${b.enforcement.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>
+    <p class="small"><span class="chip ${b.llm_enabled_in_this_run?"acc":"muted"}">model ${b.llm_enabled_in_this_run?"enabled":"not configured → deterministic renderer"}</span></p>`));
+  c.appendChild(g);
+  const split=r.telemetry.latency.pct_by_layer||{};
+  c.appendChild(el("p","small",
+    "Measured share of pipeline time: "+Object.entries(split).map(([k,v])=>
+      `<span class="chip ${k==="LLM"?"warn":"ok"}">${esc(k)} ${v}%</span>`).join("")));
+  return c;
+}
+
+function telCard(r){
+  const t=r.telemetry, c=el("div","card");
+  c.appendChild(el("h2",null,"Runtime telemetry"));
+  const g=el("div","grid g4");
+  g.appendChild(el("div","card",`<div class="small muted">End-to-end latency</div>
+    <div class="big">${fmt(t.latency.total_ms,0)} ms</div>
+    <div class="small muted">warm state built once in ${fmt(r.warm_state_build_ms,0)} ms</div>`));
+  g.appendChild(el("div","card",`<div class="small muted">Model calls</div>
+    <div class="big">${t.model_calls.count}</div>
+    <div class="small muted">hard budget ${t.model_calls.max_allowed_per_analysis}/analysis</div>`));
+  g.appendChild(el("div","card",`<div class="small muted">Tokens (${esc(t.tokens.source)})</div>
+    <div class="big">${t.tokens.total.toLocaleString()}</div>
+    <div class="small muted">${t.tokens.prompt.toLocaleString()} in / ${t.tokens.completion.toLocaleString()} out
+    ${t.tokens.estimator?"<br>"+esc(t.tokens.estimator):""}</div>`));
+  g.appendChild(el("div","card",`<div class="small muted">Estimated cost</div>
+    <div class="big">$${t.cost.usd_per_analysis.toFixed(5)}</div>
+    <div class="small muted">₹${t.cost.inr_per_analysis.toFixed(3)} &middot; prices recorded ${esc(t.cost.price_recorded_on)}
+    <br>$${t.cost.projection_50_analyses_per_day_usd_month.toFixed(2)}/mo at 50 analyses/day</div>`));
+  c.appendChild(g);
+  const tb=el("table");
+  tb.innerHTML="<tr><th>Stage</th><th>Layer</th><th>ms</th></tr>"+
+    t.latency.stages_ms.map(s=>`<tr><td class="mono small">${esc(s.stage)}</td>
+      <td><span class="chip ${s.layer==="LLM"?"warn":"ok"}">${esc(s.layer)}</span></td>
+      <td>${fmt(s.ms,1)}</td></tr>`).join("");
+  c.appendChild(el("div","scroll")).appendChild(tb);
+  const mv=el("details",null,"<summary>Model versions stamped into this result</summary>");
+  mv.innerHTML+=`<pre>${esc(JSON.stringify(t.model_versions,null,1))}</pre>`;
+  c.appendChild(mv);
+  if(t.model_calls.calls.length){
+    const mc=el("details",null,"<summary>Model call log</summary>");
+    mc.innerHTML+=`<pre>${esc(JSON.stringify(t.model_calls.calls,null,1))}</pre>`;
+    c.appendChild(mc);
+  }
+  return c;
+}
+
+// ------------------------------------------------------------------ side tabs
+async function showContract(){
+  const v=$("#view"); v.innerHTML="";
+  const c=el("div","card"); c.appendChild(el("h2",null,
+    `KPI semantic contract &middot; version ${esc(CONTRACT.contract_version)} &middot; hash ${esc(CONTRACT.registry_hash)}`));
+  c.appendChild(el("p","small muted",
+    "This is not documentation. The engine loads this file, validates it, and reads drivers, thresholds, materiality and access rules from it. An analysis not expressible here cannot run."));
+  v.appendChild(c);
+  const srcs=el("div","card"); srcs.appendChild(el("h2",null,"Sources"));
+  const st=el("table");
+  st.innerHTML="<tr><th>Id</th><th>System</th><th>Grain</th><th>Calendar</th><th>Cadence</th><th>Reliability</th><th>Timestamps</th><th>Class</th><th>Known gaps</th></tr>"+
+    Object.entries(CONTRACT.sources).map(([k,s])=>`<tr><td class="mono">${esc(k)}</td><td>${esc(s.system)}</td>
+      <td class="small">${esc(s.grain)}</td><td>${esc(s.calendar)}</td><td class="small">${esc(s.refresh_cadence)}</td>
+      <td>${s.reliability_weight}</td><td class="small">${esc(s.timestamp_convention)}</td>
+      <td><span class="chip">${esc(s.access_classification)}</span></td>
+      <td class="small muted">${esc((s.known_coverage_gaps||[]).join("; "))}</td></tr>`).join("");
+  srcs.appendChild(el("div","scroll")).appendChild(st);
+  v.appendChild(srcs);
+  Object.entries(CONTRACT.kpis).forEach(([k,x])=>{
+    const d=el("div","card");
+    d.innerHTML=`<h2>${esc(x.name)} <span class="mono small">${esc(k)}</span> v${esc(x.contract_version)}</h2>
+      <p class="small">${esc(x.definition)}</p>
+      <span class="chip mono">${esc(x.formula)}</span><span class="chip">${esc(x.unit)}</span>
+      <span class="chip">${esc(x.grain)}</span><span class="chip">${esc(x.time_aggregation)}</span>
+      <span class="chip">${esc(x.calendar)}</span><span class="chip">${esc(x.refresh_cadence)}</span>
+      <span class="chip">owner ${esc(x.owner)}</span>
+      ${x.launched_on?`<span class="chip warn">launched ${esc(x.launched_on)} &middot; ${x.history_days}d history</span>`:""}
+      ${x.not_interchangeable_with.length?`<span class="chip bad">not interchangeable with ${esc(x.not_interchangeable_with.join(", "))}</span>`:""}
+      <table>
+        <tr><th>Thresholds</th><td class="small mono">${esc(JSON.stringify(x.thresholds))}</td></tr>
+        <tr><th>Materiality</th><td class="small mono">${esc(JSON.stringify(x.materiality_threshold))}</td></tr>
+        <tr><th>Lineage</th><td class="small">${esc(x.calculation)}<br>${esc((x.source_tables||[]).join(", "))}
+            <br>${esc((x.transformations||[]).join(" → "))}</td></tr>
+      </table>
+      <details><summary>Drivers (${x.drivers.length})</summary>
+        <table><tr><th>Driver</th><th>Kind</th><th>Source</th><th>Grain</th><th>Expected sign</th><th>Prior lag</th></tr>
+        ${x.drivers.map(dr=>`<tr><td class="mono small">${esc(dr.driver_id)}</td>
+          <td><span class="chip ${dr.kind==="CAUSAL_CANDIDATE"?"acc":dr.kind==="NUISANCE"?"muted":"info"}">${esc(dr.kind)}</span></td>
+          <td>${esc(dr.source)}</td><td>${esc(dr.grain)}</td><td>${esc(dr.expected_sign)}</td>
+          <td>${dr.prior_lag_days?dr.prior_lag_days.join("–")+"d":"&mdash;"}</td></tr>`).join("")}</table></details>
+      <details><summary>Access restrictions</summary>
+        <table><tr><th>Role</th><th>Max grain</th><th>Row scope</th><th>Denied fields</th></tr>
+        ${Object.entries(x.access_restrictions).map(([role,a])=>`<tr><td>${esc(role)}</td>
+          <td><span class="chip ${a.max_grain==="DENIED"?"bad":"ok"}">${esc(a.max_grain)}</span></td>
+          <td>${esc(a.row_scope)}</td><td class="small">${esc(a.denied_fields.join(", "))||"none"}</td></tr>`).join("")}</table></details>`;
+    v.appendChild(d);
+  });
+  const g=el("div","card"); g.appendChild(el("h2",null,"Declared causal prior (analyst-approved)"));
+  const gt=el("table");
+  gt.innerHTML="<tr><th>From</th><th>To</th><th>Rationale</th><th>Approved by</th><th>On</th></tr>"+
+    CONTRACT.declared_causal_edges.map(e=>`<tr><td class="mono small">${esc(e.from)}</td>
+      <td class="mono small">${esc(e.to)}</td><td class="small">${esc(e.rationale)}</td>
+      <td class="small">${esc(e.approved_by)}</td><td class="small">${esc(e.approved_on)}</td></tr>`).join("");
+  g.appendChild(el("div","scroll")).appendChild(gt);
+  g.innerHTML+=`<h3>Declared unobserved</h3><pre>${esc(JSON.stringify(CONTRACT.unobserved,null,1))}</pre>`;
+  v.appendChild(g);
+  const pb=el("div","card"); pb.appendChild(el("h2",null,"Playbook catalogue (human-owned, versioned)"));
+  const pt=el("table");
+  pt.innerHTML="<tr><th>Id</th><th>Title</th><th>Action</th><th>Targets</th><th>Personas</th><th>Owner</th><th>Cost</th><th>Time to impact</th></tr>"+
+    CONTRACT.playbook_catalogue.map(p=>`<tr><td class="mono small">${esc(p.playbook_id)}</td><td class="small">${esc(p.title)}</td>
+      <td><span class="chip ${p.action_type==="REMEDIATE"?"ok":"warn"}">${esc(p.action_type)}</span></td>
+      <td class="mono small">${esc(p.targets_driver)}</td><td class="small">${esc(p.personas.join(", "))}</td>
+      <td class="small">${esc(p.owner)}</td><td>${esc(p.cost_band)}</td><td>${p.time_to_impact_days.join("–")}d</td></tr>`).join("");
+  pb.appendChild(el("div","scroll")).appendChild(pt);
+  v.appendChild(pb);
+}
+
+async function showDQ(){
+  const d=await api("/api/data_quality"); const v=$("#view"); v.innerHTML="";
+  const c=el("div","card"); c.appendChild(el("h2",null,"Data quality &middot; exposed, never hidden"));
+  c.innerHTML+=`<p class="small muted">Rows are quarantined and counted, never silently dropped or imputed. Deliberately injected defects for this dataset:</p>
+    <pre>${esc(JSON.stringify(d.injected_defects,null,1))}</pre>`;
+  v.appendChild(c);
+  const t=el("div","card"); t.appendChild(el("h2",null,"Detected defects"));
+  const tt=el("table");
+  tt.innerHTML="<tr><th>Id</th><th>Source</th><th>Table</th><th>Kind</th><th>Severity</th><th>Rows</th><th>Rate</th><th>Action</th><th>Detail</th></tr>"+
+    d.data_quality.defects.map(x=>`<tr><td class="mono">${esc(x.defect_id)}</td><td>${esc(x.source_id)}</td>
+      <td class="small">${esc(x.table)}</td><td>${esc(x.kind)}</td>
+      <td><span class="chip ${x.severity==="HIGH"?"bad":x.severity==="MEDIUM"?"warn":"muted"}">${esc(x.severity)}</span></td>
+      <td>${x.rows_affected}/${x.rows_total}</td><td>${(x.rate*100).toFixed(2)}%</td>
+      <td><span class="chip">${esc(x.action_taken)}</span></td>
+      <td class="small muted">${esc(x.detail)}</td></tr>`).join("");
+  t.appendChild(el("div","scroll")).appendChild(tt);
+  v.appendChild(t);
+  const f=el("div","card"); f.appendChild(el("h2",null,"Freshness &amp; coverage"));
+  f.innerHTML+=`<pre>${esc(JSON.stringify(d.data_quality.freshness,null,1))}</pre>
+    <h3>Coverage</h3><pre>${esc(JSON.stringify(d.data_quality.coverage,null,1))}</pre>
+    <h3>Blocking gaps</h3><ul>${d.data_quality.blocking_gaps.map(x=>`<li class="small">${esc(x)}</li>`).join("")}</ul>`;
+  v.appendChild(f);
+  const g=el("div","card"); g.appendChild(el("h2",null,"Grain / cadence / calendar reconciliation"));
+  const gt=el("table");
+  gt.innerHTML="<tr><th>Id</th><th>Source</th><th>From</th><th>To</th><th>Method</th><th>Resolution</th><th>Imputed</th><th>Rows in/out</th><th>Note</th></tr>"+
+    d.grain_transforms.map(x=>`<tr><td class="mono">${esc(x.transform_id)}</td><td>${esc(x.source_id)}</td>
+      <td class="small">${esc(x.from_grain)}</td><td class="small">${esc(x.to_grain)}</td>
+      <td class="small mono">${esc(x.method)}</td>
+      <td><span class="chip ${x.temporal_resolution_days>1?"warn":"ok"}">${x.temporal_resolution_days}d</span></td>
+      <td>${x.is_imputed?'<span class="chip warn">yes</span>':"no"}</td>
+      <td>${x.rows_in}/${x.rows_out}</td><td class="small muted">${esc(x.note)}</td></tr>`).join("");
+  g.appendChild(el("div","scroll")).appendChild(gt);
+  g.innerHTML+="<ul>"+d.calendar_notes.map(x=>`<li class="small muted">${esc(x)}</li>`).join("")+"</ul>";
+  v.appendChild(g);
+}
+
+async function showSec(){
+  const v=$("#view"); v.innerHTML="";
+  const c=el("div","card");
+  c.appendChild(el("h2",null,"Role-based security probe &middot; backend enforcement"));
+  c.appendChild(el("p","small muted",
+    "These calls hit the policy engine directly. A refusal is an HTTP 403 with an audit event, not a hidden UI element."));
+  const probes=[
+    ["ops_manager","net_revenue",null,"South","Ops manager (North) asks for South revenue"],
+    ["ops_manager","gross_revenue",null,null,"Ops manager asks for a KPI outside their domain"],
+    ["ops_manager","subscription_arr",null,null,"Ops manager asks for Subscription ARR"],
+    ["cfo","on_time_dispatch_rate","day x warehouse",null,"CFO asks for warehouse-level ops detail"],
+    ["cfo","net_revenue","day x region x product_line",null,"CFO asks for product-line grain"],
+    ["ops_manager","on_time_dispatch_rate","day x warehouse","North","Ops manager asks for their own warehouses"],
+    ["finance_analyst","recognized_revenue_finance",null,null,"Analyst asks for statutory revenue"],
+    ["cfo","net_revenue",null,"North","CFO asks for one region"],
+  ];
+  const t=el("table");
+  t.innerHTML="<tr><th>Attempt</th><th>Persona</th><th>KPI</th><th>Grain</th><th>Region</th><th>Result</th><th>Code / reason</th><th>Audit</th></tr>";
+  c.appendChild(el("div","scroll")).appendChild(t);
+  v.appendChild(c);
+  for(const [p,k,g,rg,label] of probes){
+    const q=new URLSearchParams({persona_id:p,kpi_id:k});
+    if(g)q.set("grain",g); if(rg)q.set("region",rg);
+    let res; try{ res=await api("/api/security/probe?"+q); }catch(e){ res=e.payload||{}; }
+    const row=document.createElement("tr");
+    row.innerHTML=`<td class="small">${esc(label)}</td><td>${esc(p)}</td><td class="mono small">${esc(k)}</td>
+      <td class="small">${esc(g||"default")}</td><td>${esc(rg||"all")}</td>
+      <td><span class="chip ${res.allowed?"ok":"bad"}">${res.allowed?"200 ALLOW":"403 DENY"}</span></td>
+      <td class="small">${esc(res.code||"")} ${esc((res.message||"").slice(0,180))}</td>
+      <td class="mono small">${esc(res.audit_event||"")}</td>`;
+    t.appendChild(row);
+  }
+  const a=await api("/api/audit");
+  const au=el("div","card"); au.appendChild(el("h2",null,"Audit log (append-only)"));
+  const at=el("table");
+  at.innerHTML="<tr><th>Event</th><th>Time</th><th>Type</th><th>Actor</th><th>Role</th><th>Resource</th><th>Outcome</th><th>Detail</th></tr>"+
+    a.events.slice().reverse().map(e=>`<tr><td class="mono small">${esc(e.event_id)}</td>
+      <td class="small">${esc(e.recorded_at)}</td><td class="small">${esc(e.event_type)}</td>
+      <td class="small">${esc(e.actor)}</td><td class="small">${esc(e.role)}</td>
+      <td class="small mono">${esc(e.resource)}</td>
+      <td><span class="chip ${e.outcome==="DENY"?"bad":"ok"}">${esc(e.outcome)}</span></td>
+      <td class="small mono">${esc(JSON.stringify(e.detail).slice(0,200))}</td></tr>`).join("");
+  au.appendChild(el("div","scroll")).appendChild(at);
+  v.appendChild(au);
+}
+
+async function showTel(){
+  const t=await api("/api/telemetry"), b=await api("/api/boundary");
+  const v=$("#view"); v.innerHTML="";
+  const c=el("div","card"); c.appendChild(el("h2",null,"Telemetry across this process"));
+  c.innerHTML+=`<pre>${esc(JSON.stringify(t,null,1))}</pre>`;
+  v.appendChild(c);
+  const d=el("div","card"); d.appendChild(el("h2",null,"LLM boundary"));
+  d.innerHTML+=`<pre>${esc(JSON.stringify(b,null,1))}</pre>`;
+  v.appendChild(d);
+}
+
+$("#run").onclick=run;
+$("#scenario").onchange=run;
+$("#persona").onchange=run;
+$("#tabContract").onclick=showContract;
+$("#tabDQ").onclick=showDQ;
+$("#tabSec").onclick=showSec;
+$("#tabTel").onclick=showTel;
+boot();
+</script>
+</body>
+</html>
