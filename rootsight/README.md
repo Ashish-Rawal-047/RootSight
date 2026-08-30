@@ -58,4 +58,4 @@ gates, structure screen, estimators, identification · `evidence/` typed objects
 `compiler/` Trust Contract, plan, renderer, validator, clarification ·
 `scenarios/` declarative scenarios · `pipeline.py` · `api/`
 
-Architecture and the full v4→v5 audit: `../RootSight_Architecture_v5.md`.
+
